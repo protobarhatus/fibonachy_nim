@@ -17,7 +17,7 @@ int* buildFibonacci()
 		return fib;
 	}
 	{
-		//дин. память потому что я не знаю как создать его на стеке чтобы он не удалился при выходе из функции
+		//heap because i dont know how to make it on stack so that it wont deletes after return from function
 		fib = (int *)calloc(FIB_AMOUNT, sizeof(int));
 	}
 
@@ -60,7 +60,7 @@ int firstFibonacciInItsBaseSystem(int num)
 int next_turn(int total, int possible)
 {
 	int to_take;
-	if (total <= 0) //  не здесь не ассерт так как мало ли что там наверху произошло но вернуть 0 это логичное поведение, типо ни одной палки не взяли
+	if (total <= 0) //  there is no assert because its meaningfull to take zero sticks if its 0 of them or less and thats external error that external program must deal with
 		return 0;
 	if (total == 1)
 		return 1;
