@@ -5,7 +5,7 @@
 #define true 1
 #define false 0
 #define nullptr NULL
-#define FIB_AMOUNT 90
+#define FIB_AMOUNT 47
 
 int* buildFibonacci()
 {
