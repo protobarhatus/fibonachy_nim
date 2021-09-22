@@ -1,3 +1,12 @@
+/*
+* Algorithm is simple brute forsing: We try to fill graph for each variant of triplet's sum for each variant of 0s triplet and each sum's decompositon into triplet
+* then we through circle through different variants branch. For every new triplet, we already know one of addictives and sum, so we need to try only one addictive
+* on each step we checking if some digit is already in graph and can summ be splited this way in general
+* so most of branches end rather quickly
+* also as a result we get n of each combinations that correspond to cycle move, but we can sort result array and just ignore repetitions
+*/
+
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,80 +57,6 @@ static int min(int a, int b)
     return a < b ? a : b;
 }
 
-/*bool callocThreeDeepNode(Node* external, int n, int s)
-{
-    int i = 0, j = 0;
-    int max_f = min(2 * n, s - 3);
-    int c;
-    bool has_cont_in = false;
-    bool has_cont_ext = false;
-    external->next = (Node*)calloc(2 * n + 1, sizeof(Node));
-    for (i = 1; i <= max_f; ++i)
-    {
-
-        external->next[i].next = (Node*)calloc(2 * n + 1, sizeof(Node));
-        has_cont_in = false;
-        for (j = 1; j <= max_f; ++j)
-        {
-            if (j == i)
-            {
-                external->next[i].next[j].num = -1;
-                continue;
-            }
-            c = s - i - j;
-            if (c == i || c == j || c <= 0 || c > 2 * n)
-                external->next[i].next[j].num = -1;
-            else
-            {
-                external->next[i].next[j].num = c;
-                has_cont_in = true;
-            }
-        }
-        if (!has_cont_in)
-        {
-            free(external->next[i].next);
-            external->next[i].next = NULL;
-            external->next[i].num = -1;
-        }
-        else
-        {
-            has_cont_ext = true;
-            external->next[i].num = i;
-        }
-    }
-    if (has_cont_ext)
-        return true;
-    free(external->next);
-    external->next = NULL;
-    external->num = -1;
-    return false;
-
-    
-}
-
-Node* getAllSumsCombinations(int n)
-{
-    int i = 0;
-    Node* sums = (Node*)calloc(6 * n - 3 + 1, sizeof(Node));
-    for (i = 0; i < 6; ++i)
-    {
-        sums[i].next = NULL;
-        sums[i].num = -1;
-    }
-    for (i = 6; i <= 6 * n - 3; ++i)
-    {
-        bool res = callocThreeDeepNode(&sums[i], n, i);
-        if (!res)
-        {
-            sums[i].next = NULL;
-            sums[i].num = -1;
-        }
-    }
-
-    return sums;
-
-}*/
-
 struct GraphFilling
 {
     int inner[MAX_N];
@@ -129,12 +64,14 @@ struct GraphFilling
     bool taken[2 * MAX_N] = { false };
     int n;
 };
+
 void graphFillingSetInner(GraphFilling* obj, int index, int n, int size)
 {
     obj->inner[index] = n;
     obj->taken[n] = true;
     obj->n = size;
 }
+
 void graphFillingSetOutter(GraphFilling* obj, int index, int n, int size)
 {
     obj->outer[index] = n;
@@ -159,24 +96,26 @@ PrVector defaultPrVector()
     return vec;
 }
 
-void prVectorAddElement(PrVector* vec, int index, GraphFilling element)
+void prVectorAddElement(PrVector* vec, int index, GraphFilling *element)
 {
     GraphFilling* new_arr = NULL;
     if (vec->located_mem <= index)
     {
         new_arr = (GraphFilling*)calloc(2 * vec->located_mem + 1, sizeof(GraphFilling));
+        assert(new_arr != NULL);
         memcpy((void*)new_arr, (void*)vec->arr, vec->located_mem * sizeof(GraphFilling));
-        memcpy((void*)&new_arr[index], (void*)&element, sizeof(GraphFilling));
+        memcpy((void*)&new_arr[index], (void*)element, sizeof(GraphFilling));
         free(vec->arr);
         vec->arr = new_arr;
         vec->located_mem = 2 * vec->located_mem + 1;
     }
     else
-        memcpy((void*)&vec->arr[index], (void*)&element, sizeof(GraphFilling));
+        memcpy((void*)&vec->arr[index], (void*)element, sizeof(GraphFilling));
 }
+
 void prVectorPushBack(PrVector* vec, GraphFilling element)
 {
-    prVectorAddElement(vec, vec->index, element);
+    prVectorAddElement(vec, vec->index, &element);
     ++vec->index;
 }
 
@@ -184,6 +123,7 @@ bool isValidSumSplit(int a, int b, int c, int s, int n)
 {
     return a + b + c == s && a != b && a != c && b != c && a > 0 && b > 0 && c > 0 && a <= 2 * n && b <= 2 * n && c <= 2 * n;
 }
+
 bool tryToFillExactStartCond(int s, int n, int depth_index, const GraphFilling* cond, PrVector * res)
 {
     assert(cond != nullptr && res != nullptr);
@@ -212,30 +152,30 @@ bool tryToFillExactStartCond(int s, int n, int depth_index, const GraphFilling* 
         if (cond->taken[i])
             continue;
 
-            first_sum = i;
-            second_sum = cond->inner[depth_index];
-            third_sum = s - first_sum - second_sum;
+        first_sum = i;
+        second_sum = cond->inner[depth_index];
+        third_sum = s - first_sum - second_sum;
 
-            if (!isValidSumSplit(first_sum, second_sum, third_sum, s, n))
-                continue;
+        if (!isValidSumSplit(first_sum, second_sum, third_sum, s, n))
+            continue;
 
-            if (cond->taken[third_sum])
-                continue;
+        if (cond->taken[third_sum])
+            continue;
 
-            GraphFilling attempt_graph;
-            memcpy((void*)&attempt_graph, (void*)cond, sizeof(GraphFilling));
-            graphFillingSetOutter(&attempt_graph, depth_index, first_sum, n);
-            graphFillingSetInner(&attempt_graph, depth_index + 1, third_sum, n);
-            PrVector vec = defaultPrVector();
-            succes = tryToFillExactStartCond(s, n, depth_index + 1, &attempt_graph, &vec);
-            if (succes)
-            {
+        GraphFilling attempt_graph;
+        memcpy((void*)&attempt_graph, (void*)cond, sizeof(GraphFilling));
+        graphFillingSetOutter(&attempt_graph, depth_index, first_sum, n);
+        graphFillingSetInner(&attempt_graph, depth_index + 1, third_sum, n);
+        PrVector vec = defaultPrVector();
+        succes = tryToFillExactStartCond(s, n, depth_index + 1, &attempt_graph, &vec);
+        if (succes)
+        {
                 //free(cond);
                // memcpy((void*)cond, (void*)&attempt_graph, sizeof(GraphFilling));
-                for (j = 0; j < vec.index; ++j)
-                    prVectorPushBack(res, vec.arr[j]);
-                found_someting = true;
-            }
+            for (j = 0; j < vec.index; ++j)
+                prVectorPushBack(res, vec.arr[j]);
+            found_someting = true;
+        }
 
 
     }
@@ -243,24 +183,16 @@ bool tryToFillExactStartCond(int s, int n, int depth_index, const GraphFilling* 
 }
 
 
-PrVector tryToFillExactSum(int s, int n)
+void tryToFillExactSum(int s, int n, PrVector * result)
 {
     int i = 0, j = 0;
     bool succes = false;
-    PrVector result = defaultPrVector();
+    //PrVector result = defaultPrVector();
 
     for (i = 1; i <= 2 * n; ++i)
     {
-   //     if (sum_split[i].num <= 0)
-    //    {
-     //       continue;
-    //    }
         for (j = 1; j <= 2 * n && s - i - j > 0; ++j)
         {
-         //   if (sum_split[j].num <= 0)
-       //     {
-      //          continue;
-      //      }
 
             if (!isValidSumSplit(i, j, s - i - j, s, n))
                 continue;
@@ -269,14 +201,13 @@ PrVector tryToFillExactSum(int s, int n)
             graphFillingSetInner(&cond, 0, j, n);
             graphFillingSetInner(&cond, 1, s - i - j, n);
             
-            succes = tryToFillExactStartCond(s, n, 1, &cond, &result);
+            succes = tryToFillExactStartCond(s, n, 1, &cond, result);
             if (succes)
             {
                // prVectorPushBack(&result, cond);
             }
         }
     }
-    return result;
 }
 
 PrVector findAllCombinations(int n)
@@ -286,9 +217,7 @@ PrVector findAllCombinations(int n)
     PrVector res = defaultPrVector();
     for (i = 6; i <= 6 * n - 3; ++i)
     {
-        PrVector combs = tryToFillExactSum(i, n);
-        for (j = 0; j < combs.index; ++j)
-            prVectorPushBack(&res, combs.arr[j]);
+        tryToFillExactSum(i, n, &res);
     }
     return res;
 }
@@ -366,6 +295,8 @@ int main()
 
     if (!scanf("%d", &n))
         return 0;
+    if (n > MAX_N)
+        return 0;
 
     PrVector combs = findAllCombinations(n);
     qsort((void*)combs.arr, combs.index, sizeof(GraphFilling), ghaphFillingLess);
@@ -374,22 +305,3 @@ int main()
         outCircle(&combs.arr[i], n);
     }
 }
-
-/*4, 2, 3;   5, 3, 1;   6, 1, 2;
-4, 3, 2;   6, 2, 1;   5, 1, 3;
-2, 3, 5;   4, 5, 1;   6, 1, 3;
-2, 5, 3;   6, 3, 1;   4, 1, 5;
-1, 4, 6;   3, 6, 2;   5, 2, 4;
-1, 6, 4;   5, 4, 2;   3, 2, 6;
-1, 5, 6;   2, 6, 4;   3, 4, 5;
-1, 6, 5;   3, 5, 4;   2, 4, 6;
-1, 6, 5;   3, 5, 4;   2, 4, 6;
-4, 3, 1;   5, 1, 2;   6, 2, 3;
-4, 2, 1;   6, 1, 3;   5, 3, 2;
-2, 5, 1;   4, 1, 3;   6, 3, 5;
-2, 3, 1;   6, 1, 5;   4, 5, 3;
-1, 6, 2;   3, 2, 4;   5, 4, 6;
-1, 4, 2;   5, 2, 6;   3, 6, 4;
-1, 6, 4;   2, 4, 5;   3, 5, 6;
-1, 5, 4;   3, 4, 6;   2, 6, 5;
-1, 5, 4;   3, 4, 6;   2, 6, 5;*/
