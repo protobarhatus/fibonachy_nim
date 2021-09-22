@@ -1,8 +1,34 @@
+/*
+* so as i couldn't come up with more efficient, mathematical idea (if its exist), i do brute force all variants
+* the system is defined by inner polygon (circle in terms of programm), and triplet's sum
+* so program at first makes all variations of inner polygon and then tries to build to them different outter polygon by brute forcing third member of one of triplet, that
+* is equivalent to triplet's sum. if it can fill out circle, than it one of answers
+*
+* all variations of inner polygon is all variations of filling n places with 2*n different numbers and are made by this way:
+* min element is fixed in [0] position, so it prevents cyclical repeats. min element may be from 1 to n + 1. for convience, variations for each min elements are done separatly
+* Assuming, min element m is fixed, first variation is minimal possible in lexicographical order: m, m + 1, m + 2, ... , m + n - 1
+* then all variations are made by step-by-step incrementing previous variant. increment is made like of regular number in 2*n base with condition that digit may take only one place
+* in number and no digits less than m are allowed
+*
+* on each step, variation is accompanied by table that remembers what digit can or cannot be used on specific place
+* its needed to not look back for every digit finding if it already present in number
+* that table increments simultaniously with variation
+*
+* variations would have clock-wise and counterclock-wise symmetry pair, but i keeping it because result with them are actually different
+* so each variation with its symmetry pair can provide (if its provide anything at all) at least 4 different variants
+*
+* the filling of polygon is saved in struct CircleFilling, that keeps not only array with filling, but also boolean table that tells witch numbers of 1..2*n are present in that filling
+* it's very helpful to finding out filling of outter polygon cause for every number we should'nt scan inner polygon to find out if it is taken
+*/
+
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <string.h>
+
 
 long long int binomialCoefficient(int n, int k)
 {
@@ -81,10 +107,11 @@ void setAwaylabilityToAllDigitsOfAndAfter(int pos, int dig, int n, bool value, b
 
 int fact(int n)
 {
+    int i = 0, res = 1;
     assert(n <= 12);
-    if (n == 1)
-        return 1;
-    return n * fact(n - 1);
+    for (i = 1; i <= n; ++i)
+        res *= i;
+    return res;
 }
 bool incrementCombs(const int* previous, int* dest, bool* awaylable_slots, int n)
 {
@@ -200,6 +227,9 @@ struct CircleFilling
 void createCircleFilling(CircleFilling* obj, int n)
 {
     obj->inner_fill = (int*)calloc(n, sizeof(int));
+
+    assert(obj->inner_fill != NULL);
+
     for (int i = 0; i < 2 * MAX_COMB_ARRAY_LEN; ++i)
         obj->has_number[i] = false;
 }
@@ -207,6 +237,9 @@ void createCircleFilling(CircleFilling* obj, int n)
 CircleFilling* callocCircleFilling(int n)
 {
     CircleFilling* obj = (CircleFilling*)calloc(1, sizeof(CircleFilling));
+
+    assert(obj != NULL);
+
     createCircleFilling(obj, n);
     return obj;
 }
@@ -224,9 +257,7 @@ void moveCircleFilling(CircleFilling* what, CircleFilling* dest)
     int i = 0;
     dest->inner_fill = what->inner_fill;
     what->inner_fill = NULL;
-    //idk how to move that properly if not create it on heap
-    for (; i < 2 * MAX_COMB_ARRAY_LEN; ++i)
-        dest->has_number[i] = what->has_number[i];
+    memcpy((void*)dest, (void*)what, sizeof(bool) * 2 * MAX_COMB_ARRAY_LEN);
 }
 
 void circleFillingAddNumber(CircleFilling* circle, int num, int index)
@@ -253,8 +284,13 @@ CircleFilling* buildInnerFillVariations(int n)
    // printf("%d\n", binomialCoefficient(2 * n - 1, n - 1));
     int one_block_size = binomialCoefficient(2 * n - 1, n - 1) * fact(n - 1);
     long long int size = (n + 1) * one_block_size;
-    int** inner_fill = (int**)calloc(size + 1, sizeof(int));
+
+    int** inner_fill = (int**)calloc(size + 1, sizeof(int*));
+    assert(inner_fill != NULL);
+
     CircleFilling* answ_inner_fill = (CircleFilling*)calloc(size + 1, sizeof(CircleFilling));
+    assert(answ_inner_fill != NULL);
+
     int i = 0, j = 0, k = 0;
     bool incremented_awailable_slots[MAX_COMB_ARRAY_LEN * 2 * MAX_COMB_ARRAY_LEN] = { false };
     int true_coms_arr_size = 1;
@@ -262,9 +298,12 @@ CircleFilling* buildInnerFillVariations(int n)
     assert(n >= 3);
 
     inner_fill[0] = (int*)calloc(2, sizeof(int));
+    assert(inner_fill != NULL);
+
     for (i = 1; i <= size; ++i)
     {
         inner_fill[i] = (int*)calloc(n, sizeof(int));
+        assert(inner_fill[i] != NULL);
         inner_fill[i][0] = 1 + ((i - 1) / one_block_size);
     }
 
@@ -299,6 +338,8 @@ CircleFilling* buildInnerFillVariations(int n)
     }
 
     answ_inner_fill[0].inner_fill = (int *)calloc(2, sizeof(int));
+    assert(answ_inner_fill[0].inner_fill != NULL);
+
     for (i = 1; i < size + 1; ++i)
     {
        // if (!isMinOnSecondHalf(inner_fill[i], n))
@@ -357,6 +398,7 @@ CircleFilling** findAllOutFillings(CircleFilling* inner_variations, int n, int a
 {
     int i = 0;
     CircleFilling **out_fillings = (CircleFilling**)calloc(2 * amount_of_variations, sizeof(CircleFilling*));
+    assert(out_fillings != NULL);
     for (i = 1; i < amount_of_variations; ++i)
     {
         //outArray(inner_variations[i].inner_fill, n);
@@ -400,7 +442,7 @@ int findMinIndex(CircleFilling* circle, int n)
 
 void printfTriplet(int a, int b, int c)
 {
-    printf("%d, %d, %d; ", a, b, c);
+    printf("%d, %d, %d;   ", a, b, c);
 }
 void outCircle(CircleFilling* inner_circle, CircleFilling* outer_circle, int n)
 {
@@ -417,7 +459,11 @@ void outCircle(CircleFilling* inner_circle, CircleFilling* outer_circle, int n)
 
 int main()
 {
-    int n = 3;
+    int n = 0;
+
+    if (!scanf("%d", &n))
+        abort();
+
     CircleFilling* variations = buildInnerFillVariations(n);
     CircleFilling** out_circles = NULL;
     int i = 0;
