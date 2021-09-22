@@ -1,11 +1,11 @@
 /*
 * so as i couldn't come up with more efficient, mathematical idea (if its exist), i do brute force all variants
-* the system is defined by inner polygon (circle in terms of programm), and triplet's sum
+* the system is defined by inner polygon (circle in terms of programm), and triplet's sum and sum direction
 * so program at first makes all variations of inner polygon and then tries to build to them different outter polygon by brute forcing third member of one of triplet, that
 * is equivalent to triplet's sum. if it can fill out circle, than it one of answers
 *
 * all variations of inner polygon is all variations of filling n places with 2*n different numbers and are made by this way:
-* min element is fixed in [0] position, so it prevents cyclical repeats. min element may be from 1 to n + 1. for convience, variations for each min elements are done separatly
+* min element is fixed in [0] position, so it prevents cyclical repeats. min element may be from 1 to n + 1. for convenience, variations for each min elements are done separatly
 * Assuming, min element m is fixed, first variation is minimal possible in lexicographical order: m, m + 1, m + 2, ... , m + n - 1
 * then all variations are made by step-by-step incrementing previous variant. increment is made like of regular number in 2*n base with condition that digit may take only one place
 * in number and no digits less than m are allowed
