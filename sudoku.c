@@ -377,7 +377,6 @@ int main()
         gets(prestr);
         if (prestr[0] == 'S')
             printf("%d\n", sum);
-        printf("||| %s |||||", prestr);
         sudoku = initializeSudoku(stdin);
         found_res = completeSudoku(&sudoku);
         if (!found_res)
