@@ -394,7 +394,6 @@ int main()
     setbuf(stdout, 0);
     struct Sudoku sudoku = initializeSudoku(stdin, 9);
 
-    printf("Loaded\n");
     completeSudoku(&sudoku);
 
     outSudoku(&sudoku, stdout);
