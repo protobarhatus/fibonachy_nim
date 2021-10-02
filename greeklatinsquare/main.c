@@ -6,11 +6,13 @@ int main() {
 
     setbuf(stdout, 0);
 
-    //GreekLatinSquare square = generateGreekLatinSquare(8);
-    GreekLatinSquare  square = defaultGreekLatinSquare(10);
+    //GreekLatinSquare square = generateGreekLatinSquare(8, 0);
+    int n;
+    scanf("%d", &n);
+    GreekLatinSquare  square = defaultGreekLatinSquare(n);
 
     scanfGreekLatinSquare(&square, SCANF_MODE_DIRECT);
-    //printfGreekLatinSquare(&square);
+    printfGreekLatinSquare(&square);
     GreekLatinSquare ort = generateOrthogonal(&square);
     printfGreekLatinSquare(&ort);
 

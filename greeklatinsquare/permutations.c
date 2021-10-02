@@ -9,15 +9,12 @@ void setAvailabilityToAllDigitsOfAndAfter(Permutations * obj, int pos, int dig, 
 void initializePermutations(Permutations * res, int n, int dig_range, bool initialize_diagonal)
 {
     int i = 0;
-    res->first_arr = defaultArrayInt(n, 0);
-    res->second_arr = defaultArrayInt(n, 0);
+    res->perm_arr = defaultArrayInt(n, 0);
     res->available_slots = defaultArray2dInt(n, dig_range + 1, true);
     res->is_const_value = defaultArrayInt(n, false);
     res->is_const_false_availability = defaultArray2dInt(n, dig_range + 1, false);
     res->n = n;
     res->amount_of_digits = dig_range;
-    res->main_arr = &res->first_arr;
-    res->supporting_arr = &res->second_arr;
 
     res->did_start_filling = initialize_diagonal;
 
@@ -27,7 +24,7 @@ void initializePermutations(Permutations * res, int n, int dig_range, bool initi
     if (initialize_diagonal)
     {
         for (i = 0; i < n; ++i) {
-            *atArrayInt(&res->first_arr, i) = i + 1;
+            *atArrayInt(&res->perm_arr, i) = i + 1;
             setAvailabilityToAllDigitsOfAndAfter(res, i, i + 1, n, false);
         }
     }
@@ -36,7 +33,7 @@ void initializePermutations(Permutations * res, int n, int dig_range, bool initi
 //diagonals are not initialized
 void permutationsSetConstantValue(Permutations * res, int index, int value)
 {
-    *atArrayInt(res->main_arr, index) = value;
+    *atArrayInt(&res->perm_arr, index) = value;
     setAvailabilityToAllDigitsOfAndAfter(res, 0, value, res->n, false);
     *atArrayInt(&res->is_const_value, index) = true;
 }
@@ -51,7 +48,7 @@ int* atPermutations(Permutations * obj, int i)
 {
     assert(i < obj->n);
     assert(i >= 0);
-    return atArrayInt(obj->main_arr, i);
+    return atArrayInt(&obj->perm_arr, i);
 }
 
 bool isSlotAvailable(Permutations * obj, int index, int dig)
@@ -113,7 +110,7 @@ void setAvailabilityToAllDigitsOfAndAfter(Permutations * obj, int pos, int dig, 
     }
 }
 
-bool tryIncrementOnThatPlace(Permutations * res, const ArrayInt * previous, ArrayInt * dest, int n, int dig_range,
+bool tryIncrementOnThatPlace(Permutations * res, ArrayInt * dest, int n, int dig_range,
                              int incr_lab, int dig_incr)
 {
     ArrayInt tried_digits = defaultArrayInt(n - incr_lab, 0);
@@ -158,27 +155,24 @@ bool tryIncrementOnThatPlace(Permutations * res, const ArrayInt * previous, Arra
     return true;
 }
 
-bool makeIncrementation(Permutations * res, const ArrayInt * previous, ArrayInt * dest, int n, int dig_range)
+bool makeIncrementation(Permutations * res, ArrayInt * dest, int n, int dig_range)
 {
     int incr_lab = n - 1;
     int i = 0, j = 0;
-    //as 0 position is taken by 1 always
 
-    for (i = 0; i < n; ++i)
-        *atArrayInt(dest, i) = *atArrayInt(previous, i);
     for (incr_lab = n - 1; incr_lab >= 0; --incr_lab)
     {
         if (*atArrayInt(&res->is_const_value, incr_lab))
             continue;
 
-        int dig_incr = findDigitsIncrement(res, incr_lab, *atArrayInt(previous, incr_lab), dig_range);
+        int dig_incr = findDigitsIncrement(res, incr_lab, *atArrayInt(dest, incr_lab), dig_range);
         //   if (incr_lab == (n - 1) / 2 && previous[incr_lab] == 2)
         //      continue;
-        setAvailabilityToAllDigitsOfAndAfter(res, incr_lab, *atArrayInt(previous, incr_lab), n, true);
+        setAvailabilityToAllDigitsOfAndAfter(res, incr_lab, *atArrayInt(dest, incr_lab), n, true);
         if (dig_incr > 0)
         {
           //  setAvailabilityToAllDigitsOfAndAfter(res, incr_lab, *atArrayInt(previous, incr_lab), n, true);
-            if (tryIncrementOnThatPlace(res, previous, dest, n, dig_range, incr_lab, dig_incr))
+            if (tryIncrementOnThatPlace(res, dest, n, dig_range, incr_lab, dig_incr))
                 return true;
         }
     }
@@ -198,9 +192,7 @@ static void swap(ArrayInt ** a, ArrayInt ** b)
 bool incrementPermutation(Permutations * perm)
 {
     assert(perm->did_start_filling);
-    bool res = makeIncrementation(perm, perm->main_arr, perm->supporting_arr, perm->n, perm->amount_of_digits);
-    swap(&perm->main_arr, &perm->supporting_arr);
-    return res;
+    return makeIncrementation(perm, &perm->perm_arr, perm->n, perm->amount_of_digits);
 }
 
 bool permutationsMakeMinFilling(Permutations * res)
@@ -211,7 +203,7 @@ bool permutationsMakeMinFilling(Permutations * res)
 
     if (dig == -1)
         return false;
-    return tryIncrementOnThatPlace(res, res->main_arr, res->main_arr, res->n, res->amount_of_digits, 0, dig);
+    return tryIncrementOnThatPlace(res, &res->perm_arr, res->n, res->amount_of_digits, 0, dig);
    /* for (int i = 0; i < res->n; ++i)
     {
         if (*atArrayInt(res->main_arr, i) != 0)

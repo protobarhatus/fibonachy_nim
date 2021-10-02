@@ -8,9 +8,8 @@
 //<no move>
 struct Permutations_struct
 {
-     
-    ArrayInt first_arr;
-    ArrayInt second_arr;
+
+    ArrayInt perm_arr;
 
     Array2dInt available_slots;
     ArrayInt is_const_value;
@@ -19,8 +18,6 @@ struct Permutations_struct
     int n;
     int amount_of_digits;
 
-    ArrayInt * main_arr;
-    ArrayInt * supporting_arr;
 
     bool did_start_filling;
 

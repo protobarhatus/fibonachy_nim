@@ -17,7 +17,7 @@ typedef struct GreekLatinSquare_struct GreekLatinSquare;
 
 GreekLatinSquare defaultGreekLatinSquare(int n);
 
-GreekLatinSquare generateGreekLatinSquare(int n);
+GreekLatinSquare generateGreekLatinSquare(int n, int ans_required_number);
 
 GreekLatinSquare generateOrthogonal(GreekLatinSquare * source);
 

@@ -35,7 +35,7 @@ void assignPermutationNumberPlacementToSquare(int n, GreekLatinSquare * res, Per
 
 
 
-bool recursivePermutationGeneration(int n, int depth, GreekLatinSquare * res)
+bool recursivePermutationGeneration(int n, int depth, GreekLatinSquare * res, int ans_required_number, int * counter)
 {
     Permutations number_section;
     int i = 0, j = 0;
@@ -52,8 +52,13 @@ bool recursivePermutationGeneration(int n, int depth, GreekLatinSquare * res)
     {
         GreekLatinSquare attempt = *res;
         assignPermutationNumberPlacementToSquare(n, &attempt, &number_section, depth + 1);
-        if (recursivePermutationGeneration(n, depth + 1, &attempt))
+        if (recursivePermutationGeneration(n, depth + 1, &attempt, ans_required_number, counter))
         {
+            if (depth == n - 1 && *counter < ans_required_number)
+            {
+                *counter ++;
+                return false;
+            }
             *res = attempt;
             return true;
         }
@@ -64,8 +69,9 @@ bool recursivePermutationGeneration(int n, int depth, GreekLatinSquare * res)
 
 
 
-GreekLatinSquare generateGreekLatinSquare(int n)
+GreekLatinSquare generateGreekLatinSquare(int n, int ans_required_number)
 {
+    int counter = 0;
     GreekLatinSquare res = defaultGreekLatinSquare(n);
 
  /*   for (int i = 0; i < n; ++i)
@@ -78,7 +84,7 @@ GreekLatinSquare generateGreekLatinSquare(int n)
 
     return res;*/
 
-    recursivePermutationGeneration(n, 0, &res);
+    recursivePermutationGeneration(n, 0, &res, ans_required_number, &counter);
 
     return res;
 }
