@@ -12,6 +12,17 @@ GreekLatinSquare defaultGreekLatinSquare(int n)
     return square;
 }
 
+bool isDefaultSquare(GreekLatinSquare * square)
+{
+    for (int i = 0; i < square->n; ++i)
+    {
+        for (int j = 0; j < square->n; ++j)
+            if (*atGreekLatinSquare(square, i, j) != 0)
+                return false;
+    }
+    return true;
+}
+
 void setConstantNumbersInPermutation(int n, GreekLatinSquare * obj, Permutations * res)
 {
     int i = 0, j = 0;
@@ -60,39 +71,6 @@ double countPersent(int range, int n, Permutations * perm)
     return res;
 }
 
-double power(double a, int n)
-{
-    double prod = 1;
-    double m = a;
-    while (n > 0)
-    {
-        if (n % 2 == 1)
-            prod *= m;
-        n /= 2;
-        m *= m;
-    }
-    return prod;
-}
-
-static int fact(int n)
-{
-    //too much calls otherwise
-    static int table[] = {
-         1,
-         1,
-         2,
-         6,
-         24,
-         120,
-         720,
-         5040,
-         40320,
-         362880,
-         3628800
-    };
-    assert(n <= 10);
-    return table[10];
-}
 
 bool recursivePermutationGeneration(int n, int depth, GreekLatinSquare * res, int ans_required_number, int * counter, ExecutionLogMode mode,
                                     double start_percent)
@@ -208,10 +186,8 @@ GreekLatinSquare generateOrthogonal(GreekLatinSquare * source, ExecutionLogMode 
     return res;
 }
 
-int * atGreekLatinSquare(GreekLatinSquare * obj, int i, int j)
-{
-    return atArray2dInt(&obj->square, i, j);
-}
+int * atGreekLatinSquare(GreekLatinSquare * obj, int i, int j);
+
 
 void printfLatinSquare(GreekLatinSquare * obj)
 {

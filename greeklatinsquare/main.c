@@ -48,7 +48,11 @@ int main(int argc, char * argv[]) {
     fscanfGreekLatinSquare(stdin, &square, SCANF_MODE_DIRECT);
     GreekLatinSquare ort = generateOrthogonal(&square, mode);
 
-
+    if (isDefaultSquare(&ort))
+    {
+        printf("No orthogonal square exist\n");
+        return 0;
+    }
     if (!areOrthogonal(&square, &ort))
         printf("Error:\n");
 
