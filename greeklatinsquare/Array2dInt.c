@@ -20,25 +20,11 @@ struct  Array2d_struct defaultArray2dInt(int w, int h, int def_val)
     return arr;
 }
 
-int * atArray2dInt(struct  Array2d_struct * obj, int x, int y)
-{
-    assert(x < obj->w);
-    assert(y < obj->h);
-    assert(x >= 0);
-    assert(y >= 0);
+int * atArray2dInt(struct  Array2d_struct * obj, int x, int y);
 
-    return &obj->arr[x * ARR_MAX_WIDTH + y];
-}
 
-const int * catArray2dInt(const Array2dInt * obj, int x, int y)
-{
-    assert(x < obj->w);
-    assert(y < obj->h);
-    assert(x >= 0);
-    assert(y >= 0);
+const int * catArray2dInt(const Array2dInt * obj, int x, int y);
 
-    return &obj->arr[x * ARR_MAX_WIDTH + y];
-}
 
 int findElementOnVertical(const Array2dInt * arr, int x, int el)
 {

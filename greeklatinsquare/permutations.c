@@ -44,21 +44,19 @@ void permutationsSetConstFalseAvailability(Permutations * res, int index, int di
     *atArray2dInt(&res->available_slots, index, dig) = false;
 }
 
-int* atPermutations(Permutations * obj, int i)
-{
-    assert(i < obj->n);
-    assert(i >= 0);
-    return atArrayInt(&obj->perm_arr, i);
-}
+int* atPermutations(Permutations * obj, int i);
 
 bool isSlotAvailable(Permutations * obj, int index, int dig)
 {
+    if (*atArrayInt(&obj->is_const_value, index))
+        return false;
     if (!(*atArray2dInt(&obj->available_slots, index, dig)))
         return false;
     if (obj->equality_lines_enabled)
     {
         return *atArray2dInt(&obj->are_available_from_equality_lines, index, dig);
     }
+
     return true;
 }
 
@@ -115,16 +113,23 @@ bool tryIncrementOnThatPlace(Permutations * res, ArrayInt * dest, int n, int dig
 {
     ArrayInt tried_digits = defaultArrayInt(n - incr_lab, 0);
     int start_incr_lab = incr_lab;
+    if (!(*atArrayInt(&res->is_const_value, incr_lab)))
+    {
+        if (dig_incr == 0)
+            dig_incr = findMinDigit(res, 0, dig_range);
+        if (dig_incr == -1)
+            return false;
+        *atArrayInt(&tried_digits, 0) = dig_incr;
 
-    *atArrayInt(&tried_digits, 0) = dig_incr;
-
-    *atArrayInt(dest, incr_lab) = dig_incr;
-    setAvailabilityToAllDigitsOfAndAfter(res, incr_lab, dig_incr, n, false);
+        *atArrayInt(dest, incr_lab) = dig_incr;
+        setAvailabilityToAllDigitsOfAndAfter(res, incr_lab, dig_incr, n, false);
+    }
 
     for (incr_lab += 1; incr_lab < n && incr_lab >= start_incr_lab; ++incr_lab)
     {
-        if (*atArrayInt(&res->is_const_value, incr_lab))
-            continue;
+        //printfArrayInt(&tried_digits);
+      //  if (*atArrayInt(&res->is_const_value, incr_lab))
+      //      continue;
 
         if (*atArrayInt(&tried_digits, incr_lab - start_incr_lab) > 0)
             setAvailabilityToAllDigitsOfAndAfter(res, incr_lab, *atArrayInt(&tried_digits, incr_lab - start_incr_lab), n, true);
@@ -199,11 +204,11 @@ bool permutationsMakeMinFilling(Permutations * res)
 {
     assert(!res->did_start_filling);
     res->did_start_filling = true;
-    int dig = findMinDigit(res, 0, res->amount_of_digits);
+   // int dig = findMinDigit(res, 0, res->amount_of_digits);
 
-    if (dig == -1)
-        return false;
-    return tryIncrementOnThatPlace(res, &res->perm_arr, res->n, res->amount_of_digits, 0, dig);
+   // if (dig == -1)
+   //     return false;
+    return tryIncrementOnThatPlace(res, &res->perm_arr, res->n, res->amount_of_digits, 0, 0);
    /* for (int i = 0; i < res->n; ++i)
     {
         if (*atArrayInt(res->main_arr, i) != 0)

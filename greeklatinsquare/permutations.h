@@ -34,7 +34,12 @@ void initializePermutations(Permutations * res, int n, int dig_range, bool initi
 //diagonals are not initialized
 void permutationsSetConstantValue(Permutations * res, int index, int value);
 
-int* atPermutations(Permutations * obj, int i);
+static inline int* atPermutations(Permutations * obj, int i)
+{
+    assert(i < obj->n);
+    assert(i >= 0);
+    return atArrayInt(&obj->perm_arr, i);
+}
 
 bool incrementPermutation(Permutations * perm);
 

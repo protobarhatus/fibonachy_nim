@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "arrayint.h"
 #include <assert.h>
 #include <string.h>
@@ -17,10 +18,9 @@ ArrayInt defaultArrayInt(int n, int def_val)
     return res;
 }
 
-int* atArrayInt(ArrayInt * obj, int i)
+void printfArrayInt(ArrayInt * obj)
 {
-    assert(i >= 0);
-    assert(i < obj->n);
-
-    return &obj->arr[i];
+    for (int i  =0 ; i < obj->n; ++i)
+        printf("%d ", *atArrayInt(obj, i));
+    printf("\n");
 }

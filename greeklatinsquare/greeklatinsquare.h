@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 #include "Array2dInt.h"
+#include <stdio.h>
+#include "user_interactions.h"
 
 //<"=" == copy>
 //<no move>
@@ -17,13 +19,15 @@ typedef struct GreekLatinSquare_struct GreekLatinSquare;
 
 GreekLatinSquare defaultGreekLatinSquare(int n);
 
-GreekLatinSquare generateGreekLatinSquare(int n, int ans_required_number);
+GreekLatinSquare generateLatinSquare(int n, int ans_required_number, ExecutionLogMode mode);
 
-GreekLatinSquare generateOrthogonal(GreekLatinSquare * source);
+GreekLatinSquare generateOrthogonal(GreekLatinSquare * source, ExecutionLogMode mode);
 
 int * atGreekLatinSquare(GreekLatinSquare * obj, int i, int j);
 
-void printfGreekLatinSquare(GreekLatinSquare * obj);
+void printfLatinSquare(GreekLatinSquare * obj);
+
+void printfGreekLatinSquare(GreekLatinSquare * a, GreekLatinSquare * b);
 
 enum ScanfMode
 {
@@ -32,9 +36,9 @@ enum ScanfMode
 };
 
 
-void scanfGreekLatinSquare(GreekLatinSquare * obj, enum ScanfMode mode);
+void fscanfGreekLatinSquare(FILE * file, GreekLatinSquare * obj, enum ScanfMode mode);
 
 bool areOrthogonal(GreekLatinSquare * a, GreekLatinSquare * b);
 
-
+bool isLatin(GreekLatinSquare * square);
 #endif //GREEKLATINGSQ_GREEKLATINSQUARE_H
