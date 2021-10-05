@@ -23,7 +23,10 @@ GreekLatinSquare generateLatinSquare(int n, int ans_required_number, ExecutionLo
 
 GreekLatinSquare generateOrthogonal(GreekLatinSquare * source, ExecutionLogMode mode);
 
-int * atGreekLatinSquare(GreekLatinSquare * obj, int i, int j);
+static inline int * atGreekLatinSquare(GreekLatinSquare * obj, int i, int j)
+{
+    return atArray2dInt(&obj->square, i, j);
+}
 
 void printfLatinSquare(GreekLatinSquare * obj);
 
@@ -41,4 +44,6 @@ void fscanfGreekLatinSquare(FILE * file, GreekLatinSquare * obj, enum ScanfMode 
 bool areOrthogonal(GreekLatinSquare * a, GreekLatinSquare * b);
 
 bool isLatin(GreekLatinSquare * square);
+
+bool isDefaultSquare(GreekLatinSquare * square);
 #endif //GREEKLATINGSQ_GREEKLATINSQUARE_H
