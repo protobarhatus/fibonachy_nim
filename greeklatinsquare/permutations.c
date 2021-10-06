@@ -2,6 +2,27 @@
 #include <assert.h>
 #include <stdio.h>
 
+/*
+ * class represent different permutations of some set in form of digit with dig_range based system, n digits
+ * and condition on its digits of no repetitions
+ * thus, different digits represent all variants of permutations and only them, their amount equal A[dig_range][n]
+ * in Increment function, permutation is replaced by next, assuming operation less is standard
+ * in incremention, function check if it can increment last digit. If yes, then it's done.
+ * If no, digit is removed and pointer goes down. eventually, it will find digit (if no, then permutation if max)
+ * that digit is replaced by next available and then it goes backwards, setting minimum available digits
+ * to speed up incrementation, class contains boolean array that tells if digit is available
+ * and is changed every time digit gets placed/removed
+ *
+ * but to skip variants that are forbidden in orthogonal square (pair repetition),
+ * class implements equality_lines (inside class they are considered in abstract from latin squares). in this array,
+ * n = equality_lines[i][j], where i is index of place, j is digit, and n is digit in i+1 column that is
+ * forbidden if in i slot there is j digit (that represent that if in i column of latin square is digit k,
+ * setting digit in orthogonal to k forbids all lines in next columns where k is present. n is line of k in next column,
+ * information about k itself is not saved)
+ *
+ * that also complicates incrementation, because now, after incremented digit is found its necessary to make try-and-repeat
+ * method to set new digits, but amount of skipped permutations is worth it
+ */
 typedef struct Permutations_struct Permutations;
 
 void setAvailabilityToAllDigitsOfAndAfter(Permutations * obj, int pos, int dig, int n, bool value);
@@ -91,12 +112,6 @@ void setAvailabilityToAllDigitsOfAndAfter(Permutations * obj, int pos, int dig, 
     if (obj->equality_lines_enabled)
     {
 
-      /*  for (i = 0; i < n; ++i)
-        {
-            int next_eq_line_index = *atArray2dInt(obj->equality_ways, i, dig - 1) + 1;
-            if (!(*atArray2dInt(&obj->is_const_false_availability, (pos + i) % n, next_eq_line_index)))
-                *atArray2dInt(&obj->are_available_from_equality_lines, (pos + i) % n, next_eq_line_index) = value;
-        }*/
       int next_eq_line_index = dig;
         for (i = pos; i < n; ++i)
         {

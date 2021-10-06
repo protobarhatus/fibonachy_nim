@@ -4,12 +4,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+
 void test()
 {
     FILE * in = stdin;
     int n;
     int i = 0;
-    fscanf(in, "%d", &n);
+    n = getValue(in);
     for (int i = 0; i < n; ++i)
     {
         GreekLatinSquare square;

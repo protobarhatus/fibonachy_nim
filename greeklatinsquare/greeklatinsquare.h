@@ -22,7 +22,8 @@ GreekLatinSquare defaultGreekLatinSquare(int n);
 GreekLatinSquare generateLatinSquare(int n, int ans_required_number, ExecutionLogMode mode);
 
 GreekLatinSquare generateOrthogonal(GreekLatinSquare * source, ExecutionLogMode mode);
-
+//it's no const cause then return type must be const, but writing also goes through this function
+//it may be righter to make function const int * catGreekLatinSquare(const GreekLatinSquare *,...), but its now hard to change
 static inline int * atGreekLatinSquare(GreekLatinSquare * obj, int i, int j)
 {
     return atArray2dInt(&obj->square, i, j);

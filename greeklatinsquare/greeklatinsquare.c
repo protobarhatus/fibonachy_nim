@@ -3,6 +3,15 @@
 #include "permutations.h"
 #include <stdio.h>
 #include <assert.h>
+#include "user_interactions.h"
+/*
+ * basic idea here in recursive brute force with backtracking, but it's recursive relative to sections of specific
+ * number. Different sections of each digit are gotten by incrementing Permutation, where on value of permutation[i]
+ * is position (line) of digit on i column
+ * on account of realization of Permutation, all invalid sections (including latin squares, but where
+ * two same pairs of dig in source square, and searchable orthogonal occurs) are skipped
+ * in 0 column, all digit go in order, because of symmetry
+ * */
 
 GreekLatinSquare defaultGreekLatinSquare(int n)
 {
@@ -83,6 +92,7 @@ bool recursivePermutationGeneration(int n, int depth, GreekLatinSquare * res, in
 
     initializePermutations(&number_section, n, n, false);
     setConstantNumbersInPermutation(n, res, &number_section);
+    permutationsSetConstantValue(&number_section, 0, depth + 1);
     if (!permutationsMakeMinFilling(&number_section))
         return false;
 
@@ -149,9 +159,7 @@ bool recursiveGenerateOrthogonal(int n, int depth, Array2dInt * source_indexed, 
     initializePermutations(&number_section, n, n, false);
     setConstantNumbersInPermutation(n, res, &number_section);
     permutationsSetEqualityLines(&number_section, source_indexed);
-    //probably we can say that 1 should only be in left top corner, cause of symmetry ?
-    if (depth == 0)
-        permutationsSetConstantValue(&number_section, 0, 1);
+    permutationsSetConstantValue(&number_section, 0, depth + 1);
     if (!permutationsMakeMinFilling(&number_section))
         return false;
 
@@ -222,14 +230,14 @@ void fscanfGreekLatinSquare(FILE * file, GreekLatinSquare * obj, enum ScanfMode 
     int d, n;
     assert(file != NULL);
 
-    fscanf(file, "%d", &n);
+    n = getValue(file);
     *obj = defaultGreekLatinSquare(n);
 
     for (int i = 0; i < obj->n; ++i)
     {
         for (int j = 0; j < obj->n; ++j)
         {
-            fscanf(file,"%d", &d);
+            d = getValue(file);
             if (mode == SCANF_MODE_DIRECT)
                 *atGreekLatinSquare(obj, i, j) = (d + obj->n - 1) % obj->n + 1;
             else
