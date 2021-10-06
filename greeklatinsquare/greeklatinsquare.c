@@ -98,7 +98,7 @@ bool recursivePermutationGeneration(int n, int depth, GreekLatinSquare * res, in
 
     do
     {
-        double percent = countPersent(n, n, &number_section) * (depth == 0 ? n : 1);
+        double percent = countPersent(n, n, &number_section) * n;
         if (n - depth > 7)
         {
             printfStage(mode, percent, start_percent, depth);
@@ -165,7 +165,7 @@ bool recursiveGenerateOrthogonal(int n, int depth, Array2dInt * source_indexed, 
 
     do
     {
-        double percent = countPersent(n, n, &number_section) * (depth == 0 ? n : 1);
+        double percent = countPersent(n, n, &number_section) * n;
         if (n - depth > 7)
         {
             printfStage(mode, percent, start_percent, depth);
