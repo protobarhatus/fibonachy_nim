@@ -1,0 +1,8 @@
+#ifndef GREEKLATINGSQ_USER_INTERACTIONS_H
+#define GREEKLATINGSQ_USER_INTERACTIONS_H
+#include <stdio.h>
+
+
+int getValue(FILE * input);
+
+#endif //GREEKLATINGSQ_USER_INTERACTIONS_H
