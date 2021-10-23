@@ -149,22 +149,22 @@ typedef struct Vector##UCN##_struct Vector##UCN ;                               
                                                                                         \
                                                                                         \
 static inline TN * atVector##UCN (Vector##UCN * obj, int i) {                                                   \
-    return ( TN *)obj->vec.at(&obj->vec, i);                                                                                        \
+    return ( TN *)atVector(&obj->vec, i);                                                                                        \
 }                                                                                                                               \
 static inline const TN * catVector##UCN (const Vector##UCN * obj, int i)  {                                 \
-    return (const TN *)obj->vec.cat(&obj->vec, i);                                                                      \
+    return (const TN *)catVector(&obj->vec, i);                                                                      \
 }                                                                                                               \
 static inline int vector##UCN##GetSize(const Vector##UCN * obj) {                                                           \
-    return obj->vec.getSize(&obj->vec);                                                          \
+    return VectorGetSize(&obj->vec);                                                          \
 }                                                                                                               \
 static inline bool vector##UCN##CanPushBack(const Vector##UCN * obj) {                                                      \
-    return obj->vec.canPushBack(&obj->vec);                                                          \
+    return VectorCanPushBack(&obj->vec);                                                          \
 }                                                                                                                   \
 static inline void vector##UCN##PushBack(Vector##UCN * obj, TN  el) {                                                                \
-    obj->vec.pushBack(&obj->vec,  (void *)&el )   ;                                                       \
+    VectorPushBack(&obj->vec,  (void *)&el )   ;                                                       \
 }                                                                                       \
 static inline TN * vector##UCN##Back(Vector##UCN * obj) {                   \
-    return obj->at(obj, obj->vec.size - 1);                                                                                        \
+    return atVector(obj, obj->vec.size - 1);                                                                                        \
 }                                                                                                                                             \
 static inline void vector##UCN##PopBack(Vector##UCN * obj) {                                                                                  \
     VectorPopBack(&obj->vec);                                                                                                                                              \
@@ -172,7 +172,7 @@ static inline void vector##UCN##PopBack(Vector##UCN * obj) {                    
 /* it STILL makes copy (full copy), BUT it frees data from pointer */                                                                                                            \
 static inline void vector##UCN##PushBackCalloced(Vector##UCN * obj, TN * el)            \
 {                                                                                       \
-    obj->vec.pushBack(&obj->vec, (void *)el);                                           \
+    VectorPushBack(&obj->vec, (void *)el);                                           \
     free(el);                                                                                                \
 }                                                                           \
 /* in this kind of wrapping, there is only one correct combination of functions and so all it copy and assign work is concentrated only here*/                                                                                                                                \

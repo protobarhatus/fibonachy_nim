@@ -144,9 +144,9 @@ bool listLikeMatrixIsFinish(ListLikeMatrixAnyIterator it);
 
 ListLikeMatrixColumnIterator getColumnStart(ListLikeMatrixAnyIterator it);
 
-ListLikeMatrixLineIterator atListLikeMatrixGetLineHeader(ListLikeMatrixAnyIterator it);
+ListLikeMatrixLineIterator listLikeMatrixGetLineHeader(ListLikeMatrixAnyIterator it);
 
-void listLikeMatrixLineMakeRestoringLabel(ListLikeMatrix * mat);
+void listLikeMatrixMakeRestoringLabel(ListLikeMatrix * mat);
 void listLikeMatrixRestoreToLabel(ListLikeMatrix * mat);
 
 void listLikeMatrixAssignFinishers(ListLikeMatrix * mat);

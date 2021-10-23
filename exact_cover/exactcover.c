@@ -9,27 +9,28 @@ bool includingLineDeleteCrissCrossAppleSause(ListLikeMatrix * matrix, ListLikeMa
 {
     bool delete_row = false;
     //assuming row is header
-    for (ListLikeMatrixLineIterator col = matrix->iterateOnLine(row); !matrix->isFinish(col); col = matrix->iterateOnLine(col))
+    for (ListLikeMatrixLineIterator col = listLikeMatrixIncrementLineIterator(row); !listLikeMatrixIsFinish(col);
+            col = listLikeMatrixIncrementLineIterator(col))
     {
-        for (ListLikeMatrixColumnIterator downhill_col_it = matrix->iterateOnColumn(matrix->getColumnHeader(col));
-             !matrix->isFinish(downhill_col_it); downhill_col_it = matrix->iterateOnColumn(downhill_col_it))
+        for (ListLikeMatrixColumnIterator downhill_col_it = listLikeMatrixIncrementColumnIterator(listLikeMatrixGetColumnHeader(col));
+             !listLikeMatrixIsFinish(downhill_col_it); downhill_col_it = listLikeMatrixIncrementColumnIterator(downhill_col_it))
         {
             delete_row = true;
             if (downhill_col_it == col)
                 continue;
-            matrix->deleteLine(matrix, downhill_col_it);
+            listLikeMatrixDeleteLine(matrix, downhill_col_it);
         }
-        matrix->deleteColumn(matrix, col);
+        listLikeMatrixDeleteColumn(matrix, col);
     }
     // if (delete_raw)
-    matrix->deleteLine(matrix, row);
+    listLikeMatrixDeleteLine(matrix, row);
     return delete_row;
 }
 
 bool checkExactCoverForChoosenRow(ListLikeMatrix * matrix, ListLikeMatrixLineIterator row, VectorInt * result)
 {
     bool delete_raw = false;
-    matrix->makeRestoringLabel(matrix);
+    listLikeMatrixMakeRestoringLabel(matrix);
 
     delete_raw = includingLineDeleteCrissCrossAppleSause(matrix, row);
 
@@ -38,18 +39,19 @@ bool checkExactCoverForChoosenRow(ListLikeMatrix * matrix, ListLikeMatrixLineIte
 
     bool res = recursivePickOutExactCover(matrix, result);
     if (!res)
-        matrix->restore(matrix);
+        listLikeMatrixRestoreToLabel(matrix);
 
     return res;
 }
 
 ListLikeMatrixColumnIterator columnWithLeastOnes(ListLikeMatrix * matrix)
 {
-    int min_ones = matrix->getLines(matrix) + 1;
+    int min_ones = listLikeMatrixGetLines(matrix) + 1;
     ListLikeMatrixColumnIterator res = NULL;
-    for (ListLikeMatrixColumnIterator it = matrix->columnsBegin(matrix); !matrix->isFinish(it); it = matrix->iterateOnLine(it))
+    for (ListLikeMatrixColumnIterator it = listLikeMatrixGetColumnBegin(matrix); !listLikeMatrixIsFinish(it);
+            it = listLikeMatrixIncrementLineIterator(it))
     {
-        int amount = matrix->getAmountOfOnesInColumn(matrix, it);
+        int amount = listLikeMatrixGetAmountOfOnesInColumn(matrix, it);
         if (amount == 0)
             return it;
         if (amount < min_ones)
@@ -68,10 +70,11 @@ bool recursivePickOutExactCover(ListLikeMatrix * matrix, VectorInt * result)
     ListLikeMatrixColumnIterator c = columnWithLeastOnes(matrix);
     if (c == NULL)
         return true;
-    int lines = matrix->getLines(matrix);
-    for (ListLikeMatrixColumnIterator it = matrix->iterateOnColumn(matrix->getColumnHeader(c)); !matrix->isFinish(it); it = matrix->iterateOnColumn(it))
+
+    for (ListLikeMatrixColumnIterator it = listLikeMatrixIncrementColumnIterator(listLikeMatrixGetColumnHeader(c));
+            !listLikeMatrixIsFinish(it); it = listLikeMatrixIncrementColumnIterator(it))
     {
-        if (checkExactCoverForChoosenRow(matrix, matrix->getLineHeader(it), result))
+        if (checkExactCoverForChoosenRow(matrix, listLikeMatrixGetLineHeader(it), result))
         {
             result->pushBack(result, it->line);
             return true;
