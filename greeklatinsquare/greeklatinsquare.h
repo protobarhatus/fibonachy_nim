@@ -2,9 +2,9 @@
 #define GREEKLATINGSQ_GREEKLATINSQUARE_H
 
 #include <stdbool.h>
-#include "Array2dInt.h"
+#include "../vector/Array2dInt.h"
+#include "../vector/vector.h"
 #include <stdio.h>
-#include "user_interactions.h"
 
 //<"=" == copy>
 //<no move>
@@ -19,15 +19,17 @@ typedef struct GreekLatinSquare_struct GreekLatinSquare;
 
 GreekLatinSquare defaultGreekLatinSquare(int n);
 
-GreekLatinSquare generateLatinSquare(int n, int ans_required_number, ExecutionLogMode mode);
+GreekLatinSquare generateLatinSquare(int n, int ans_required_number);
 
-GreekLatinSquare generateOrthogonal(GreekLatinSquare * source, ExecutionLogMode mode);
-//it's no const cause then return type must be const, but writing also goes through this function
-//it may be righter to make function const int * catGreekLatinSquare(const GreekLatinSquare *,...), but its now hard to change
-static inline int * atGreekLatinSquare(GreekLatinSquare * obj, int i, int j)
-{
-    return atArray2dInt(&obj->square, i, j);
-}
+GreekLatinSquare generateOrthogonalByBacktracking(GreekLatinSquare * source);
+
+VectorVectorInt squareToExactCover(GreekLatinSquare * source);
+
+GreekLatinSquare exactCoverToSquare(VectorInt * cover);
+
+GreekLatinSquare generateOrthogonalByExactCover(GreekLatinSquare * source);
+
+int * atGreekLatinSquare(GreekLatinSquare * obj, int i, int j);
 
 void printfLatinSquare(GreekLatinSquare * obj);
 

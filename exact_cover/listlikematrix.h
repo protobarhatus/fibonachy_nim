@@ -1,7 +1,7 @@
 #ifndef EXACT_COVER_LISTLIKEMATRIX_H
 #define EXACT_COVER_LISTLIKEMATRIX_H
-#include "vector.h"
-#include "algorithms.h"
+#include "../vector/vector.h"
+#include "../vector/algorithms.h"
 
 struct ListLikeMatrixNode_struct
 {

@@ -1,17 +1,13 @@
+#include "../exact_cover/exactcover.h"
 #include "greeklatinsquare.h"
 #include <stdbool.h>
 #include "permutations.h"
 #include <stdio.h>
 #include <assert.h>
-#include "user_interactions.h"
-/*
- * basic idea here in recursive brute force with backtracking, but it's recursive relative to sections of specific
- * number. Different sections of each digit are gotten by incrementing Permutation, where on value of permutation[i]
- * is position (line) of digit on i column
- * on account of realization of Permutation, all invalid sections (including latin squares, but where
- * two same pairs of dig in source square, and searchable orthogonal occurs) are skipped
- * in 0 column, all digit go in order, because of symmetry
- * */
+#include <math.h>
+#include "../vector/vector.h"
+#include "../vector/algorithms.h"
+#include "../user_interacts/user_interactions.h"
 
 GreekLatinSquare defaultGreekLatinSquare(int n)
 {
@@ -19,17 +15,6 @@ GreekLatinSquare defaultGreekLatinSquare(int n)
     square.n = n;
     square.square = defaultArray2dInt(n, n, 0);
     return square;
-}
-
-bool isDefaultSquare(GreekLatinSquare * square)
-{
-    for (int i = 0; i < square->n; ++i)
-    {
-        for (int j = 0; j < square->n; ++j)
-            if (*atGreekLatinSquare(square, i, j) != 0)
-                return false;
-    }
-    return true;
 }
 
 void setConstantNumbersInPermutation(int n, GreekLatinSquare * obj, Permutations * res)
@@ -54,35 +39,9 @@ void assignPermutationNumberPlacementToSquare(int n, GreekLatinSquare * res, Per
     }
 }
 
-void printfStage(ExecutionLogMode mode, double percent, double start_percent, int depth)
-{
-    switch (mode)
-    {
-        case EXECUTION_LOG_MODE_HEARTBEAT:
-            printf(".");
-        case EXECUTION_LOG_MODE_COUNTDOWN:
-            printf("lvl %d: %f%% | %f%% searched\n", depth + 1, start_percent, percent * 100);
-        default:
-            return;
-    }
-}
-
-double countPersent(int range, int n, Permutations * perm)
-{
-    double mult = 1. / range;
-    double ac_mult = mult;
-    double res = 0;
-    for (int i = 0; i < n; ++i)
-    {
-        res += (*atPermutations(perm, i) - 1) * mult;
-        mult *= ac_mult;
-    }
-    return res;
-}
 
 
-bool recursivePermutationGeneration(int n, int depth, GreekLatinSquare * res, int ans_required_number, int * counter, ExecutionLogMode mode,
-                                    double start_percent)
+bool recursivePermutationGeneration(int n, int depth, GreekLatinSquare * res, int ans_required_number, int * counter)
 {
     Permutations number_section;
     int i = 0, j = 0;
@@ -92,23 +51,14 @@ bool recursivePermutationGeneration(int n, int depth, GreekLatinSquare * res, in
 
     initializePermutations(&number_section, n, n, false);
     setConstantNumbersInPermutation(n, res, &number_section);
-    permutationsSetConstantValue(&number_section, 0, depth + 1);
     if (!permutationsMakeMinFilling(&number_section))
         return false;
 
     do
     {
-        double percent = countPersent(n, n, &number_section) * n;
-        if (n - depth > 7)
-        {
-            printfStage(mode, percent, start_percent, depth);
-        }
-
-
         GreekLatinSquare attempt = *res;
         assignPermutationNumberPlacementToSquare(n, &attempt, &number_section, depth + 1);
-        if (recursivePermutationGeneration(n, depth + 1, &attempt, ans_required_number, counter, mode,
-                                           depth == 0 ? percent : start_percent))
+        if (recursivePermutationGeneration(n, depth + 1, &attempt, ans_required_number, counter))
         {
             if (depth == n - 1 && *counter < ans_required_number)
             {
@@ -125,7 +75,7 @@ bool recursivePermutationGeneration(int n, int depth, GreekLatinSquare * res, in
 
 
 
-GreekLatinSquare generateLatinSquare(int n, int ans_required_number, ExecutionLogMode mode)
+GreekLatinSquare generateLatinSquare(int n, int ans_required_number)
 {
     int counter = 0;
     GreekLatinSquare res = defaultGreekLatinSquare(n);
@@ -140,18 +90,17 @@ GreekLatinSquare generateLatinSquare(int n, int ans_required_number, ExecutionLo
 
     return res;*/
 
-    recursivePermutationGeneration(n, 0, &res, ans_required_number, &counter, mode, 0);
+    recursivePermutationGeneration(n, 0, &res, ans_required_number, &counter);
 
     return res;
 }
 
 
 
-bool recursiveGenerateOrthogonal(int n, int depth, Array2dInt * source_indexed, GreekLatinSquare * res, ExecutionLogMode mode, double start_percent)
+bool recursiveGenerateOrthogonal(int n, int depth, Array2dInt * source_indexed, GreekLatinSquare * res)
 {
     Permutations number_section;
     int i = 0, j = 0;
-   // double progress_mult = power(1. / fact(n), depth);
 
     if (depth == n)
         return true;
@@ -159,22 +108,17 @@ bool recursiveGenerateOrthogonal(int n, int depth, Array2dInt * source_indexed, 
     initializePermutations(&number_section, n, n, false);
     setConstantNumbersInPermutation(n, res, &number_section);
     permutationsSetEqualityLines(&number_section, source_indexed);
-    permutationsSetConstantValue(&number_section, 0, depth + 1);
+    //probably we can say that 1 should only be in left top corner, cause of symmetry ?
+    if (depth == 0)
+        permutationsSetConstantValue(&number_section, 0, 1);
     if (!permutationsMakeMinFilling(&number_section))
         return false;
 
     do
     {
-        double percent = countPersent(n, n, &number_section) * n;
-        if (n - depth > 7)
-        {
-            printfStage(mode, percent, start_percent, depth);
-        }
-
-
         GreekLatinSquare attempt = *res;
         assignPermutationNumberPlacementToSquare(n, &attempt, &number_section, depth + 1);
-        if (recursiveGenerateOrthogonal(n, depth + 1, source_indexed, &attempt, mode, (depth == 0 ? percent * 100 : start_percent)))
+        if (recursiveGenerateOrthogonal(n, depth + 1, source_indexed, &attempt))
         {
             *res = attempt;
             return true;
@@ -184,18 +128,18 @@ bool recursiveGenerateOrthogonal(int n, int depth, Array2dInt * source_indexed, 
     return false;
 }
 
-GreekLatinSquare generateOrthogonal(GreekLatinSquare * source, ExecutionLogMode mode)
+GreekLatinSquare generateOrthogonalByBacktracking(GreekLatinSquare * source)
 {
-    if (source->n == 6)
-        return defaultGreekLatinSquare(6);
     Array2dInt indexed_scource = makeIndexesWayArray(&source->square);
     GreekLatinSquare res = defaultGreekLatinSquare(source->n);
-    recursiveGenerateOrthogonal(source->n, 0, &indexed_scource, &res, mode, 0);
+    recursiveGenerateOrthogonal(source->n, 0, &indexed_scource, &res);
     return res;
 }
 
-int * atGreekLatinSquare(GreekLatinSquare * obj, int i, int j);
-
+int * atGreekLatinSquare(GreekLatinSquare * obj, int i, int j)
+{
+    return atArray2dInt(&obj->square, i, j);
+}
 
 void printfLatinSquare(GreekLatinSquare * obj)
 {
@@ -218,7 +162,7 @@ void printfGreekLatinSquare(GreekLatinSquare * a, GreekLatinSquare * b)
     {
         for (j = 0; j < b->n; ++j)
         {
-            printf("%d%d ", *atGreekLatinSquare(a, i, j), *atGreekLatinSquare(b, i, j));
+            printf("%d%d", *atGreekLatinSquare(a, i, j), *atGreekLatinSquare(b, i, j));
         }
         printf("\n");
     }
@@ -230,6 +174,7 @@ void fscanfGreekLatinSquare(FILE * file, GreekLatinSquare * obj, enum ScanfMode 
     int d, n;
     assert(file != NULL);
 
+   // fscanf(file, "%d", &n);
     n = getValue(file);
     *obj = defaultGreekLatinSquare(n);
 
@@ -237,7 +182,8 @@ void fscanfGreekLatinSquare(FILE * file, GreekLatinSquare * obj, enum ScanfMode 
     {
         for (int j = 0; j < obj->n; ++j)
         {
-            d = getValue(file);
+           // fscanf(file,"%d", &d);
+           d = getValue(file);
             if (mode == SCANF_MODE_DIRECT)
                 *atGreekLatinSquare(obj, i, j) = (d + obj->n - 1) % obj->n + 1;
             else
@@ -317,6 +263,164 @@ bool areOrthogonal(GreekLatinSquare * a, GreekLatinSquare * b)
             if (hasPairRepetition(a, b, i, j))
                 return false;
         }
+    }
+    return true;
+}
+
+
+
+#define r(T, L, X, Y) (T)->at(T, L, (X) * n + (Y))
+#define c(T, L, X, Y) (T)->at(T, L, (X) * n + (Y) + n2)
+#define x(T, L, X, Y) (T)->at(T, L, (X) * n + (Y) + 2*n2)
+#define y(T, L, X, Y) (T)->at(T, L, (X) * n + (Y) + 3*n2)
+void outOrthMMatrix(VectorVectorInt * matrix, int n)
+{
+    int n2 = n*n;
+    int n3 = n*n*n;
+    int out_l_in = 0;
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = 0; j < n; ++j)
+        {
+            for (int k = 0; k < n; ++k)
+            {
+                if (j == 0 && i != k)
+                    continue;
+                for (int t = 0; t < n; ++t)
+                {
+                    for (int w = 0; w < n; ++w)
+                    {
+                        printf("%d %d %d %d ", *r(matrix, out_l_in, t, w),
+                               *c(matrix, out_l_in, t, w), *x(matrix, out_l_in, t, w), *y(matrix, out_l_in, t, w));
+
+                    }
+                }
+                printf("\n");
+                ++out_l_in;
+            }
+        }
+    }
+    printf("-----------------------------------\n\n");
+}
+
+VectorVectorInt squareToExactCover(GreekLatinSquare * source)
+{
+    int n = source->n;
+    int n2 = n*n;
+    int n3 = n*n*n;
+
+    VectorVectorInt matrix = defaultVectorVectorIntCalloc(n3 - n2 + n, defaultVectorIntCalloc(4 * n2, 0));
+
+    int line_index = 0;
+    //outOrthMMatrix(&matrix, n);
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = 0; j < n; ++j)
+        {
+            for (int k = 0; k < n; ++k)
+            {
+                if (j == 0 && !(i == k))
+                    continue;
+             //   if (j == 0 && i == k)
+              //      force_included_values.pushBack(&force_included_values, line_index);
+                *r(&matrix, line_index, i, k) = 1;
+                // outOrthMMatrix(&matrix, n);
+                *c(&matrix, line_index, j, k) = 1;
+                //  outOrthMMatrix(&matrix, n);
+                *x(&matrix, line_index, i, j) = 1;
+                // outOrthMMatrix(&matrix, n);
+                *y(&matrix, line_index, *atGreekLatinSquare(source, i, j) - 1, k) = 1;
+                ++line_index;
+                //  outOrthMMatrix(&matrix, n);
+            }
+        }
+    }
+    return matrix;
+}
+static int root(int n)
+{
+    double v = sqrt(n);
+    int v1 = v;
+    int v2 = v + 1;
+    int v3 = v - 1;
+    if (v1 * v1 == n)
+        return v1;
+    if (v2 * v2 == n)
+        return v2;
+    if (v3 * v3 == n)
+        return v3;
+    return -1;
+}
+GreekLatinSquare exactCoverToSquare(VectorInt * exact_cover)
+{
+    int n = root(exact_cover->getSize(exact_cover));
+    int n2 = n*n;
+    if (n == -1)
+        return defaultGreekLatinSquare(0);
+    GreekLatinSquare res = defaultGreekLatinSquare(n);
+
+    for (int i = 0; i < n; ++i)
+        *atGreekLatinSquare(&res, i, 0) = i + 1;
+
+    int counter = 0;
+    int shift = 0;
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = 0; j < n; ++j)
+        {
+            if (j == 0){
+                shift += n - 1;
+                ++counter;
+                continue;
+            }
+            *atGreekLatinSquare(&res, i, j) = (*exact_cover->at(exact_cover, counter) + shift) % n + 1;
+            ++counter;
+        }
+    }
+    return res;
+}
+
+GreekLatinSquare generateOrthogonalByExactCover(GreekLatinSquare * source)
+{
+
+
+    VectorVectorInt matrix = squareToExactCover(source);
+
+    VectorInt exact_cover = makeExactCover(&matrix);
+  //  printfVectorInt("", &exact_cover);
+
+    int n = source->n;
+    int n2 = n*n;
+    int n3 = n*n*n;
+
+    if(exact_cover.getSize(&exact_cover) != n2)
+    {
+        destructVectorInt(&exact_cover);
+        destructVectorVectorInt(&matrix);
+        return defaultGreekLatinSquare(n);
+    }
+
+    GreekLatinSquare res = exactCoverToSquare(&exact_cover);
+
+    destructVectorInt(&exact_cover);
+    destructVectorVectorInt(&matrix);
+
+    return res;
+
+#undef r
+#undef c
+#undef x
+#undef y
+
+}
+
+bool isDefaultSquare(GreekLatinSquare * square)
+{
+    for (int i = 0; i < square->n; ++i)
+    {
+        for (int j = 0; j < square->n; ++j)
+            if (*atGreekLatinSquare(square, i, j) != 0)
+                return false;
     }
     return true;
 }

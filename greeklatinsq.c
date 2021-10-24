@@ -1,12 +1,9 @@
 #include <stdio.h>
-#include "exactcover.h"
-#include "vector.h"
-#include "algorithms.h"
-#include "greeklatinsquare.h"
-
+#include "greeklatinsquare/permutations.h"
+#include "greeklatinsquare/greeklatinsquare.h"
 #include <string.h>
 #include <stdlib.h>
-#include "user_interactions.h"
+#include "user_interacts/user_interactions.h"
 
 void test()
 {
@@ -18,7 +15,8 @@ void test()
     {
         GreekLatinSquare square;
         fscanfGreekLatinSquare(in, &square, SCANF_MODE_DIRECT);
-        GreekLatinSquare ort = generateOrthogonalByExactCover(&square);
+
+        GreekLatinSquare ort = generateOrthogonalByBacktracking(&square);
         if (!areOrthogonal(&square, &ort))
         {
             printf("Error:\n");
@@ -33,21 +31,25 @@ void test()
 }
 
 
-int main(int argc, char * argv[])
-{
-    if (argc >= 2 && strcmp(argv[1], "-test") == 0)
-    {
-        test();
-        return 0;
-    }
+int main(int argc, char * argv[]) {
+
     setbuf(stdout, 0);
+    ExecutionLogMode mode = chooseLogMode(argc, argv);
+    if (argc > 1)
+    {
+        if (strcmp(argv[1], "test") == 0)
+        {
+            test();
+            return 0;
+        }
+    }
+
     GreekLatinSquare square;
     //squares on scanf may be with any numbers > -n, but readen square will consist only of [1..n], and so orthogonal
     //if input square contains zero, it will be translated into n and other dig in range [1..n-1] will be without changing
     fscanfGreekLatinSquare(stdin, &square, SCANF_MODE_DIRECT);
-    printf("-----\n");
-    GreekLatinSquare ort = generateOrthogonalByExactCover(&square);
-    printf("-----\n");
+    GreekLatinSquare ort = generateOrthogonalByBacktracking(&square);
+
     if (isDefaultSquare(&ort))
     {
         printf("No orthogonal square exist\n");
@@ -57,7 +59,5 @@ int main(int argc, char * argv[])
         printf("Error:\n");
 
     printfLatinSquare(&ort);
-    return 0;
-
     return 0;
 }

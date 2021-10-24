@@ -90,7 +90,7 @@ bool recursivePickOutExactCover(ListLikeMatrix * matrix, VectorInt * result)
 
 }
 
-VectorInt makeExactCover(const VectorVectorInt * matrix, const VectorInt * force_included)
+VectorInt makeExactCover(const VectorVectorInt * matrix)
 {
     ListLikeMatrix exact_cover_matrix = defaultListLikeMatrix(matrix->getSize(matrix), dim(matrix, 2), matrix);
     //*exact_cover_matrix.amount_of_ones_in_columns.at(&exact_cover_matrix.amount_of_ones_in_columns, 0) -= 1;
@@ -106,6 +106,8 @@ VectorInt makeExactCover(const VectorVectorInt * matrix, const VectorInt * force
     recursivePickOutExactCover(&exact_cover_matrix, &result);
 
     destructListLikeMatrix(&exact_cover_matrix);
+
+    sortVectorInt(&result, &intLessComparator);
     return result;
 
 }
