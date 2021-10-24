@@ -24,15 +24,18 @@ bool includingLineDeleteCrissCrossAppleSause(ListLikeMatrix * matrix, ListLikeMa
     }
     // if (delete_raw)
     listLikeMatrixDeleteLine(matrix, row);
-    return delete_row;
+    return true;
 }
+
+
+
 
 bool checkExactCoverForChoosenRow(ListLikeMatrix * matrix, ListLikeMatrixLineIterator row, VectorInt * result)
 {
     bool delete_raw = false;
     listLikeMatrixMakeRestoringLabel(matrix);
 
-    delete_raw = includingLineDeleteCrissCrossAppleSause(matrix, row);
+    delete_raw = includingLineDeleteCrissCrossAppleSause(matrix, row->line_header);
 
     if (!delete_raw)
         return false;
@@ -70,16 +73,18 @@ bool recursivePickOutExactCover(ListLikeMatrix * matrix, VectorInt * result)
     ListLikeMatrixColumnIterator c = columnWithLeastOnes(matrix);
     if (c == NULL)
         return true;
+    int new_lines_stack_start = 0;
 
     for (ListLikeMatrixColumnIterator it = listLikeMatrixIncrementColumnIterator(listLikeMatrixGetColumnHeader(c));
             !listLikeMatrixIsFinish(it); it = listLikeMatrixIncrementColumnIterator(it))
     {
-        if (checkExactCoverForChoosenRow(matrix, listLikeMatrixGetLineHeader(it), result))
+        if (checkExactCoverForChoosenRow(matrix, it, result))
         {
             result->pushBack(result, it->line);
             return true;
         }
     }
+
     return false;
 
 
@@ -92,11 +97,11 @@ VectorInt makeExactCover(const VectorVectorInt * matrix, const VectorInt * force
 
     VectorInt result = defaultVectorIntCalloc(0, 0);
 
-    for (int i = 0; i < force_included->getSize(force_included); ++i)
-    {
-        includingLineDeleteCrissCrossAppleSause(&exact_cover_matrix, getLineOfRealIndex(&exact_cover_matrix, *force_included->cat(force_included, i)));
-        result.pushBack(&result, *force_included->cat(force_included, i));
-    }
+   // for (int i = 0; i < force_included->getSize(force_included); ++i)
+   // {
+  //      includingLineDeleteCrissCrossAppleSause(&exact_cover_matrix, getLineOfRealIndex(&exact_cover_matrix, *force_included->cat(force_included, i)));
+  //      result.pushBack(&result, *force_included->cat(force_included, i));
+   // }
 
     recursivePickOutExactCover(&exact_cover_matrix, &result);
 

@@ -324,17 +324,6 @@ GreekLatinSquare generateOrthogonalByExactCover(GreekLatinSquare * source)
             {
                 if (j == 0 && !(i == k))
                     continue;
-               /* if (k + 1 == force_included_values.getSize(&force_included_values))
-                {
-                    line_index++;
-                    continue;
-                }
-                if (*atGreekLatinSquare(source, i, j) <= force_included_values.getSize(&force_included_values) &&
-                        k + 1 == *atGreekLatinSquare(source, i, j))
-                {
-                    line_index++;
-                    continue;
-                }*/
                 if (j == 0 && i == k)
                     force_included_values.pushBack(&force_included_values, line_index);
                 *r(&matrix, line_index, i, k) = 1;

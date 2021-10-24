@@ -143,12 +143,15 @@ static inline ListLikeMatrixColumnIterator listLikeMatrixIncrementColumnIterator
     return it->next_on_column;
 }
 
-ListLikeMatrixLineIterator listLikeMatrixDecrementLineIterator(ListLikeMatrixLineIterator it);
+
 static inline ListLikeMatrixColumnIterator listLikeMatrixDecrementColumnIterator(ListLikeMatrixColumnIterator it)
 {
     return it->prev_on_column;
 }
-
+static inline ListLikeMatrixLineIterator listLikeMatrixDecrementLineIterator(ListLikeMatrixLineIterator it)
+{
+    return it->prev_on_line->column == -1 ? NULL : it->prev_on_line;
+}
 
 void listLikeMatrixRestoreLine(ListLikeMatrix * mat, ListLikeMatrixLineIterator it);
 void listLikeMatrixRestoreColumn(ListLikeMatrix * mat, ListLikeMatrixColumnIterator it);
