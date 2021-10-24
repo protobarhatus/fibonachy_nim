@@ -244,7 +244,6 @@ void listLikeMatrixRestoreColumnNode(ListLikeMatrix * mat, ListLikeMatrixColumnI
         it->prev_on_line->next_on_line = it;
     }
 
-    assert(mat->deleting_log.back(&mat->deleting_log)->second == it->column);
   //  mat->deleting_log.popBack(&mat->deleting_log);
 }
 void listLikeMatrixRestoreColumn(ListLikeMatrix * mat, ListLikeMatrixColumnIterator it)
@@ -272,7 +271,6 @@ void listLikeMatrixRestoreLineNode(ListLikeMatrix * mat, ListLikeMatrixLineItera
         it->prev_on_column->next_on_column = it;
     }
 
-    assert(mat->deleting_log.back(&mat->deleting_log)->second == it->line);
     //mat->deleting_log.popBack(&mat->deleting_log);
 }
 void listLikeMatrixRestoreLine(ListLikeMatrix * mat, ListLikeMatrixLineIterator it)
@@ -288,32 +286,13 @@ void listLikeMatrixRestoreLine(ListLikeMatrix * mat, ListLikeMatrixLineIterator 
             *atVectorInt(&mat->amount_of_ones_in_columns, iter->column) += 1;
     }
 }
-ListLikeMatrixLineIterator listLikeMatrixGetLineBegin(ListLikeMatrix * mat)
-{
-    return *atVectorListLikeMatrixNodeP(&mat->lines_headers, mat->lines_start);
-}
-ListLikeMatrixColumnIterator listLikeMatrixGetColumnBegin(ListLikeMatrix * mat)
-{
-    return *atVectorListLikeMatrixNodeP(&mat->columns_headers, mat->columns_start);
-}
 
-ListLikeMatrixLineIterator listLikeMatrixGetLineEnd(ListLikeMatrix * mat)
-{
-    return *atVectorListLikeMatrixNodeP(&mat->lines_finishers, mat->absolute_lines);
-}
-ListLikeMatrixColumnIterator listLikeMatrixGetColumnEnd(ListLikeMatrix * mat)
-{
-    return *atVectorListLikeMatrixNodeP(&mat->columns_finishers, mat->absolute_columns);
-}
 
-int listLikeMatrixGetLines(const ListLikeMatrix * mat)
-{
-    return mat->lines;
-}
-int listLikeMatrixGetColumns(const ListLikeMatrix * mat)
-{
-    return mat->columns;
-}
+
+
+
+
+
 
 void destructListLikeMatrix(ListLikeMatrix * obj)
 {
@@ -333,15 +312,7 @@ int getRealLineIndex(ListLikeMatrixColumnIterator it)
     return it->line;
 }
 
-int listLikeMatrixGetAmountOfOnesInColumn(ListLikeMatrix * mat, ListLikeMatrixColumnIterator column)
-{
-    return *atVectorInt(&mat->amount_of_ones_in_columns, column->column);
-   int counter = 0;
-   for (ListLikeMatrixColumnIterator it = mat->iterateOnColumn(mat->getColumnHeader(column)); !mat->isFinish(it); it = mat->iterateOnColumn(it))
-       if (it->line_header->active)
-            ++counter;
-   return counter;
-}
+
 
 GEN_DUMMY_FUNCS_FOR_POINTER_TYPE(ListLikeMatrixNode*, ListLikeMatrixNodeP);
 GEN_DUMMY_FUNCS_FOR_SIMPLE_TYPE(ListLikeMatrixNode*, ListLikeMatrixNodeRef);
@@ -418,17 +389,8 @@ void restoreListLikeMatrixNodeToColumn(ListLikeMatrixNode * node)
     node->active = true;
 }
 
-ListLikeMatrixLineIterator listLikeMatrixIncrementLineIterator(ListLikeMatrixLineIterator it)
-{
-    ListLikeMatrixLineIterator res = it->next_on_line;
-    while (!res->column_header->active)
-        res = res->next_on_line;
-    return it->next_on_line;
-}
-ListLikeMatrixColumnIterator listLikeMatrixIncrementColumnIterator(ListLikeMatrixColumnIterator it)
-{
-    return it->next_on_column;
-}
+
+
 
 int getLineOfIterator(ListLikeMatrixAnyIterator it)
 {
@@ -458,24 +420,11 @@ void listLikeMatrixAssignFinishers(ListLikeMatrix * mat)
 
 }
 
-bool listLikeMatrixIsFinish(ListLikeMatrixAnyIterator it)
-{
-    return it == NULL || it->line_finish == NULL || it->column_finish == NULL;
-}
 
-ListLikeMatrixColumnIterator listLikeMatrixGetColumnHeader(ListLikeMatrixAnyIterator it)
-{
-    return it->column_header;
-}
-ListLikeMatrixLineIterator listLikeMatrixGetLineHeader(ListLikeMatrixAnyIterator it)
-{
-    return it->line_header;
-}
-void listLikeMatrixMakeRestoringLabel(ListLikeMatrix * mat)
-{
-    assert(mat->maintain_deleting_and_restoring_order);
-    vectorIntPushBack(&mat->deleting_labels, mat->deleting_log.getSize(&mat->deleting_log));
-}
+
+
+
+
 void listLikeMatrixRestoreToLabel(ListLikeMatrix * mat)
 {
     assert(mat->maintain_deleting_and_restoring_order);
@@ -483,18 +432,21 @@ void listLikeMatrixRestoreToLabel(ListLikeMatrix * mat)
     if (vectorIntGetSize(&mat->deleting_labels) == 0)
         return;
     int last_label = *vectorIntBack(&mat->deleting_labels);
-    while (vectorPairIntGetSize(&mat->deleting_log) > last_label)
+    int size = vectorPairIntGetSize(&mat->deleting_log);
+    int diff = size - last_label;
+    for (int i = 0; i < diff; ++i)
     {
-        PairInt del = *vectorPairIntBack(&mat->deleting_log);
+        PairInt del = *atVectorPairInt(&mat->deleting_log, size - 1 - i);
         if (del.first == DELETING_TYPE_LINE)
             listLikeMatrixRestoreLine(mat, *atVectorListLikeMatrixNodeP(&mat->lines_headers, del.second));
         else if (del.first == DELETING_TYPE_COLUMN)
             listLikeMatrixRestoreColumn(mat, *atVectorListLikeMatrixNodeP(&mat->columns_headers, del.second));
         else
             assert(false);
-        vectorPairIntPopBack(&mat->deleting_log);
+
     }
     vectorIntPopBack(&mat->deleting_labels);
+    vectorPairIntResize(&mat->deleting_log, last_label);
 
 }
 void listLikeMatrixAddLine(ListLikeMatrix * mat, ListLikeMatrixColumnIterator iterc)
@@ -521,7 +473,3 @@ void listLikeMatrixAddLine(ListLikeMatrix * mat, ListLikeMatrixColumnIterator it
 
 }
 
-ListLikeMatrixColumnIterator listLikeMatrixDecrementColumnIterator(ListLikeMatrixColumnIterator it)
-{
-    return it->prev_on_column;
-}

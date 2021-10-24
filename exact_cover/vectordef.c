@@ -2,23 +2,6 @@
 #include "vectordef.h"
 #include "stdlib.h"
 #include "string.h"
-void assignFunctions(vector * obj)
-{
-    obj->at = &atVector;
-    obj->cat = &catVector;
-    obj->getSize = &VectorGetSize;
-    obj->canPushBack = &VectorCanPushBack;
-    obj->pushBack = &VectorPushBack;
-}
-
-void assignFunctionsAsArrayInt(vector * obj)
-{
-    obj->at = &atVectorAsArrayInt;
-    obj->cat = &catVectorAsArrayInt;
-    obj->getSize = &VectorAsArrayIntGetSize;
-    obj->canPushBack = &VectorAsArrayIntCanPushBack;
-    obj->pushBack = &VectorAsArrayIntPushBack;
-}
 
 void nonConstMemcpyDecl(void * dest, void * src, size_t n)
 {
@@ -38,7 +21,6 @@ static void locateMem(vector * obj, int amount_of_el, int el_size)
 vector defaultVectorCalloc(int size, void * def_value, int el_size, CopyFunction cpy_func, DestructFunction destr, MoveFunction move_f)
 {
     vector obj;
-    assignFunctions(&obj);
     locateMem(&obj, size, el_size);
     if (size != 0)
     {
@@ -57,7 +39,6 @@ vector defaultVectorCalloc(int size, void * def_value, int el_size, CopyFunction
 vector * callocDefaultVector(int size, void * def_value, int el_size, CopyFunction cpy_func, DestructFunction destr, MoveFunction move_func)
 {
     vector *obj = (vector*)calloc(1, sizeof(vector));
-    assignFunctions(obj);
     locateMem(obj, size, el_size);
     if (size != 0)
     {
@@ -83,11 +64,6 @@ vector copyVector(const vector * cop)
     res.stack_version = cop->stack_version;
     res.element_size = cop->element_size;
 
-    res.at = cop->at;
-    res.cat = cop->cat;
-    res.getSize = cop->getSize;
-    res.canPushBack = cop->canPushBack;
-    res.pushBack = cop->pushBack;
 
     res.cpy_func = cop->cpy_func;
     res.destruct_function = cop->destruct_function;
@@ -105,11 +81,6 @@ vector moveVector(vector * cop)
     res.stack_version = cop->stack_version;
     res.element_size = cop->element_size;
 
-    res.at = cop->at;
-    res.cat = cop->cat;
-    res.getSize = cop->getSize;
-    res.canPushBack = cop->canPushBack;
-    res.pushBack = cop->pushBack;
 
     res.cpy_func = cop->cpy_func;
     res.destruct_function = cop->destruct_function;
@@ -124,17 +95,11 @@ vector* callocCopyVector(const vector * cop)
 
 }
 
-int VectorGetSize(const vector * obj)
-{
-    return obj->size;
-}
-bool VectorCanPushBack(const vector * obj)
-{
-    return true;
-}
+
+
 void VectorPushBack(vector * obj, void * el)
 {
-    assert(obj->canPushBack(obj));
+    assert(VectorCanPushBack(obj));
     if (obj->size < obj->allocated_size)
     {
         obj->move_function(obj->vec + obj->size * obj->element_size, el, obj->element_size);
@@ -214,7 +179,6 @@ void deleteVector(vector ** obj)
 vector VectorAsArrayWrap(ArrayInt * arr)
 {
     vector res;
-    assignFunctionsAsArrayInt(&res);
     res.stack_version = arr;
     res.size = arr->getSize(arr);
     res.vec = NULL;
@@ -228,7 +192,7 @@ vector VectorAsArrayWrap(ArrayInt * arr)
 vector * callocVectorAsArrayWrap(ArrayInt * arr)
 {
     vector * res = (vector *)calloc(1, sizeof(vector));
-    assignFunctionsAsArrayInt(res);
+
     res->stack_version = arr;
     res->size = arr->getSize(arr);
     res->vec = NULL;
@@ -246,13 +210,20 @@ void dummyDestructor(void * r)
 
 
 
-
-void VectorPopBack(vector * vec)
+void VectorResize(vector * vec, int new_size)
 {
-    if (vec->size == 0)
-        return;
-    vec->destruct_function(vec->at(vec, vec->size - 1));
-    vec->size--;
-
+    if (vec->allocated_size < new_size)
+    {
+        while (vec->allocated_size < new_size)
+        {
+            vec->allocated_size += 1;
+            vec->allocated_size *= 2;
+        }
+        vec->vec = realloc(vec, vec->allocated_size*sizeof(int));
+    }
+    for (int i = vec->size - 1; i >= new_size; --i)
+        vec->destruct_function(atVector(vec, i));
+    vec->size = new_size;
 }
+
 

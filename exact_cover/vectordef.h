@@ -25,11 +25,6 @@ struct vector_struct
     //vector does not own it and doesn't response for callocing and deleting it
     ArrayInt * stack_version;
 
-    void* (*at)(struct vector_struct * obj, int i);
-    const void* (*cat)(const struct vector_struct * obj, int i);
-    int (*getSize)(const struct vector_struct * obj);
-    bool (*canPushBack)(const struct vector_struct * obj);
-    void (*pushBack)(struct vector_struct * obj, void * element);
     CopyFunction cpy_func;
     DestructFunction destruct_function;
     MoveFunction move_function;
@@ -48,8 +43,15 @@ vector copyVector(const vector * cop);
 vector* callocCopyVector(const vector * cop);
 
 vector moveVector(vector * mov);
+static inline void * atVector(vector * obj, int i);
+static inline void VectorPopBack(vector * vec)
+{
+    if (vec->size == 0)
+        return;
+    vec->destruct_function(atVector(vec, vec->size - 1));
+    vec->size--;
 
-void VectorPopBack(vector * vec);
+}
 
 void destructVector(vector * obj);
 void deleteVector(vector ** obj);
@@ -79,8 +81,14 @@ static inline const void * catVectorAsArrayInt(const vector * obj, int i)
     return obj->stack_version->cat(obj->stack_version, i);
 }
 
-int VectorGetSize(const vector * obj);
-bool VectorCanPushBack(const vector * obj);
+static inline int VectorGetSize(const vector * obj)
+{
+    return obj->size;
+}
+static inline bool VectorCanPushBack(const vector * obj)
+{
+    return true;
+}
 void VectorPushBack(vector * obj, void * el);
 
 int VectorAsArrayIntGetSize(const vector * obj);
@@ -89,6 +97,7 @@ void VectorAsArrayIntPushBack(vector * obj, int el);
 
 void dummyDestructor(void * );
 
+void VectorResize(vector * vec, int new_size);
 
 void freeBehind(void ** data);
 
@@ -116,7 +125,8 @@ void nonConstMemcpyDecl(void * dest, void * src, size_t n);
     void (*pushBack)(struct Vector##UCN##_struct * obj, TN el);                         \
     TN * (*back)(struct Vector##UCN##_struct * obj);                              \
     void (*pushBackCalloced)(struct Vector##UCN##_struct * obj, TN * el);                                                                     \
-    void (*popBack)(struct Vector##UCN##_struct * obj);                                                                                    \
+    void (*popBack)(struct Vector##UCN##_struct * obj);                                                                                                                \
+    void (*resize)(struct Vector##UCN##_struct * obj, int new_size);\
 } ;                                                                                                     \
 typedef struct Vector##UCN##_struct Vector##UCN ;                                                               \
                                                                                                     \
@@ -168,7 +178,10 @@ static inline TN * vector##UCN##Back(Vector##UCN * obj) {                   \
 }                                                                                                                                             \
 static inline void vector##UCN##PopBack(Vector##UCN * obj) {                                                                                  \
     VectorPopBack(&obj->vec);                                                                                                                                              \
-}                                                                                                                \
+}                                                                                                                                                                      \
+static inline void vector##UCN##Resize(Vector##UCN * obj, int new_size) {                                                                                                            \
+    VectorResize(&obj->vec,  new_size);                                                                                                                                                                       \
+}\
 /* it STILL makes copy (full copy), BUT it frees data from pointer */                                                                                                            \
 static inline void vector##UCN##PushBackCalloced(Vector##UCN * obj, TN * el)            \
 {                                                                                       \
@@ -184,7 +197,8 @@ static inline void assignFunctionsVector##UCN(Vector##UCN * obj) {              
     obj->pushBack = &vector##UCN##PushBack;                                             \
     obj->back = &vector##UCN##Back;                                                     \
     obj->pushBackCalloced = &vector##UCN##PushBackCalloced;                                                                                   \
-    obj->popBack = &vector##UCN##PopBack;                                                                                                    \
+    obj->popBack = &vector##UCN##PopBack;                                                                                                                              \
+    obj->resize = &vector##UCN##Resize;\
 }                                                                                                                       \
 static inline Vector##UCN defaultVector##UCN##Calloc(int size, TN def_value) {                                                              \
     Vector##UCN res;                                                                                        \

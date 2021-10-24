@@ -121,37 +121,85 @@ int getRealLineIndex(ListLikeMatrixColumnIterator it);
 void listLikeMatrixDeleteLine(ListLikeMatrix * mat, ListLikeMatrixLineIterator line);
 void listLikeMatrixDeleteColumn(ListLikeMatrix * mat, ListLikeMatrixColumnIterator column);
 
-int listLikeMatrixGetLines(const ListLikeMatrix * mat);
-int listLikeMatrixGetColumns(const ListLikeMatrix * mat);
+static inline int listLikeMatrixGetLines(const ListLikeMatrix * mat)
+{
+    return mat->lines;
+}
+static inline int listLikeMatrixGetColumns(const ListLikeMatrix * mat)
+{
+    return mat->columns;
+}
 
-ListLikeMatrixLineIterator listLikeMatrixIncrementLineIterator(ListLikeMatrixLineIterator it);
-ListLikeMatrixColumnIterator listLikeMatrixIncrementColumnIterator(ListLikeMatrixColumnIterator it);
+
+static inline ListLikeMatrixLineIterator listLikeMatrixIncrementLineIterator(ListLikeMatrixLineIterator it)
+{
+    ListLikeMatrixLineIterator res = it->next_on_line;
+    while (!res->column_header->active)
+        res = res->next_on_line;
+    return it->next_on_line;
+}
+static inline ListLikeMatrixColumnIterator listLikeMatrixIncrementColumnIterator(ListLikeMatrixColumnIterator it)
+{
+    return it->next_on_column;
+}
 
 ListLikeMatrixLineIterator listLikeMatrixDecrementLineIterator(ListLikeMatrixLineIterator it);
-ListLikeMatrixColumnIterator listLikeMatrixDecrementColumnIterator(ListLikeMatrixColumnIterator it);
+static inline ListLikeMatrixColumnIterator listLikeMatrixDecrementColumnIterator(ListLikeMatrixColumnIterator it)
+{
+    return it->prev_on_column;
+}
+
 
 void listLikeMatrixRestoreLine(ListLikeMatrix * mat, ListLikeMatrixLineIterator it);
 void listLikeMatrixRestoreColumn(ListLikeMatrix * mat, ListLikeMatrixColumnIterator it);
 
-ListLikeMatrixLineIterator listLikeMatrixGetLineBegin(ListLikeMatrix * mat);
-ListLikeMatrixColumnIterator listLikeMatrixGetColumnBegin(ListLikeMatrix * mat);
+static inline ListLikeMatrixLineIterator listLikeMatrixGetLineBegin(ListLikeMatrix * mat)
+{
+    return *atVectorListLikeMatrixNodeP(&mat->lines_headers, mat->lines_start);
+}
+static inline ListLikeMatrixColumnIterator listLikeMatrixGetColumnBegin(ListLikeMatrix * mat)
+{
+    return *atVectorListLikeMatrixNodeP(&mat->columns_headers, mat->columns_start);
+}
 
-ListLikeMatrixLineIterator listLikeMatrixGetLineEnd(ListLikeMatrix * mat);
-ListLikeMatrixColumnIterator listLikeMatrixGetColumnEnd(ListLikeMatrix * mat);
+static inline ListLikeMatrixLineIterator listLikeMatrixGetLineEnd(ListLikeMatrix * mat)
+{
+    return *atVectorListLikeMatrixNodeP(&mat->lines_finishers, mat->absolute_lines);
+}
+static inline ListLikeMatrixColumnIterator listLikeMatrixGetColumnEnd(ListLikeMatrix * mat)
+{
+    return *atVectorListLikeMatrixNodeP(&mat->columns_finishers, mat->absolute_columns);
+}
 
-ListLikeMatrixColumnIterator listLikeMatrixGetColumnHeader(ListLikeMatrixAnyIterator it);
-bool listLikeMatrixIsFinish(ListLikeMatrixAnyIterator it);
+static inline ListLikeMatrixColumnIterator listLikeMatrixGetColumnHeader(ListLikeMatrixAnyIterator it)
+{
+    return it->column_header;
+}
+static inline bool listLikeMatrixIsFinish(ListLikeMatrixAnyIterator it)
+{
+    return it == NULL || it->line_finish == NULL || it->column_finish == NULL;
+}
 
 ListLikeMatrixColumnIterator getColumnStart(ListLikeMatrixAnyIterator it);
 
-ListLikeMatrixLineIterator listLikeMatrixGetLineHeader(ListLikeMatrixAnyIterator it);
+static inline ListLikeMatrixLineIterator listLikeMatrixGetLineHeader(ListLikeMatrixAnyIterator it)
+{
+    return it->line_header;
+}
 
-void listLikeMatrixMakeRestoringLabel(ListLikeMatrix * mat);
+static inline void listLikeMatrixMakeRestoringLabel(ListLikeMatrix * mat)
+{
+    assert(mat->maintain_deleting_and_restoring_order);
+    vectorIntPushBack(&mat->deleting_labels, mat->deleting_log.getSize(&mat->deleting_log));
+}
 void listLikeMatrixRestoreToLabel(ListLikeMatrix * mat);
 
 void listLikeMatrixAssignFinishers(ListLikeMatrix * mat);
 
-int listLikeMatrixGetAmountOfOnesInColumn(ListLikeMatrix * mat, ListLikeMatrixColumnIterator column);
+static inline int listLikeMatrixGetAmountOfOnesInColumn(ListLikeMatrix * mat, ListLikeMatrixColumnIterator column)
+{
+    return *atVectorInt(&mat->amount_of_ones_in_columns, column->column);
+}
 
 void listLikeMatrixAddLine(ListLikeMatrix * mat, ListLikeMatrixColumnIterator iter);
 
