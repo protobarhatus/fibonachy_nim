@@ -174,7 +174,7 @@ static inline void vector##UCN##PushBack(Vector##UCN * obj, TN  el) {           
     VectorPushBack(&obj->vec,  (void *)&el )   ;                                                       \
 }                                                                                       \
 static inline TN * vector##UCN##Back(Vector##UCN * obj) {                   \
-    return atVector(obj, obj->vec.size - 1);                                                                                        \
+    return atVector(&obj->vec, obj->vec.size - 1);                                                                                        \
 }                                                                                                                                             \
 static inline void vector##UCN##PopBack(Vector##UCN * obj) {                                                                                  \
     VectorPopBack(&obj->vec);                                                                                                                                              \
