@@ -2,8 +2,8 @@
 #define GREEKLATINGSQ_GREEKLATINSQUARE_H
 
 #include <stdbool.h>
-#include "../vector/Array2dInt.h"
-#include "../vector/vector.h"
+#include "../gen_lib/vector/Array2dInt.h"
+#include "../gen_lib/vector/vector.h"
 #include <stdio.h>
 
 //<"=" == copy>

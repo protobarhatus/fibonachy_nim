@@ -38,16 +38,16 @@ static bool hasOne(const VectorInt * vec)
 #define CALLOC_DUM_P 0
 static void createLinesAndColumnsFinishersVectors(ListLikeMatrix * mat)
 {
-    mat->lines_finishers = defaultVectorListLikeMatrixNodePCalloc(mat->lines + 1, CALLOC_DUM_P);
-    mat->columns_finishers = defaultVectorListLikeMatrixNodePCalloc(mat->columns + 1, CALLOC_DUM_P);
+    mat->lines_finishers = defaultVectorListLikeMatrixNodePtrCalloc(mat->lines + 1, CALLOC_DUM_P);
+    mat->columns_finishers = defaultVectorListLikeMatrixNodePtrCalloc(mat->columns + 1, CALLOC_DUM_P);
 
     *mat->lines_finishers.at(&mat->lines_finishers, mat->lines) = callocDefaultListLikeMatrixNode(-1, 1e9, *mat->columns_headers.back(&mat->columns_headers), NULL);
     *mat->columns_finishers.at(&mat->columns_finishers, mat->columns) = callocDefaultListLikeMatrixNode(1e9, -1, NULL, *mat->lines_headers.back(&mat->lines_headers));
 }
 static void createAndFillHeaders(ListLikeMatrix * res, int lines, int columns)
 {
-    res->columns_headers = defaultVectorListLikeMatrixNodePCalloc(0, CALLOC_DUM_P);
-    res->lines_headers = defaultVectorListLikeMatrixNodePCalloc(0, CALLOC_DUM_P);
+    res->columns_headers = defaultVectorListLikeMatrixNodePtrCalloc(0, CALLOC_DUM_P);
+    res->lines_headers = defaultVectorListLikeMatrixNodePtrCalloc(0, CALLOC_DUM_P);
     res->columns_headers.pushBack(&res->columns_headers, callocDefaultListLikeMatrixNode(-1, 0, NULL, NULL));
     res->lines_headers.pushBack(&res->lines_headers, callocDefaultListLikeMatrixNode(0, -1, NULL, NULL));
 
@@ -116,7 +116,7 @@ static void createMainMatrixAndFinishers(ListLikeMatrix * res, int lines, int co
         //  if (!hasOne(orig_matrix->cat(orig_matrix, i)))
         //    continue;
 
-        res->matrix.pushBack(&res->matrix, defaultVectorListLikeMatrixNodePCalloc(0, 0));
+        res->matrix.pushBack(&res->matrix, defaultVectorListLikeMatrixNodePtrCalloc(0, 0));
         for (int j = 0; j < columns; ++j)
         {
             if (*orig_matrix->cat(orig_matrix, i, j) != 1)
@@ -143,7 +143,7 @@ ListLikeMatrix defaultListLikeMatrix(int lines, int columns, const VectorVectorI
     ListLikeMatrix res;
     assignBasicValues(&res, lines, columns, orig_matrix);
 
-    res.matrix = defaultVectorVectorListLikeMatrixNodePCalloc(0, defaultVectorListLikeMatrixNodePCalloc(columns, CALLOC_DUM_P));
+    res.matrix = defaultVectorVectorListLikeMatrixNodePtrCalloc(0, defaultVectorListLikeMatrixNodePtrCalloc(columns, NULL));
 
     createAndFillHeaders(&res, lines, columns);
 
@@ -296,12 +296,12 @@ void listLikeMatrixRestoreLine(ListLikeMatrix * mat, ListLikeMatrixLineIterator 
 
 void destructListLikeMatrix(ListLikeMatrix * obj)
 {
-    //since it SIMPLE_POINTER_TYPE, they free data behind that pointers themselves
-    destructVectorVectorListLikeMatrixNodeP(&obj->matrix);
-    destructVectorListLikeMatrixNodeP(&obj->lines_headers);
-    destructVectorListLikeMatrixNodeP(&obj->columns_headers);
-    destructVectorListLikeMatrixNodeP(&obj->lines_finishers);
-    destructVectorListLikeMatrixNodeP(&obj->columns_finishers);
+    //since it UNIQUE_PTR, they free data behind that pointers themselves
+    destructVectorVectorListLikeMatrixNodePtr(&obj->matrix);
+    destructVectorListLikeMatrixNodePtr(&obj->lines_headers);
+    destructVectorListLikeMatrixNodePtr(&obj->columns_headers);
+    destructVectorListLikeMatrixNodePtr(&obj->lines_finishers);
+    destructVectorListLikeMatrixNodePtr(&obj->columns_finishers);
     destructVectorInt(&obj->amount_of_ones_in_columns);
     destructVectorPairInt(&obj->deleting_log);
     destructVectorInt(&obj->deleting_labels);
@@ -314,8 +314,7 @@ int getRealLineIndex(ListLikeMatrixColumnIterator it)
 
 
 
-GEN_DUMMY_FUNCS_FOR_POINTER_TYPE(ListLikeMatrixNode*, ListLikeMatrixNodeP);
-GEN_DUMMY_FUNCS_FOR_SIMPLE_TYPE(ListLikeMatrixNode*, ListLikeMatrixNodeRef);
+
 
 
 //so nodes should be calloced in strict order after headers
@@ -438,9 +437,9 @@ void listLikeMatrixRestoreToLabel(ListLikeMatrix * mat)
     {
         PairInt del = *atVectorPairInt(&mat->deleting_log, size - 1 - i);
         if (del.first == DELETING_TYPE_LINE)
-            listLikeMatrixRestoreLine(mat, *atVectorListLikeMatrixNodeP(&mat->lines_headers, del.second));
+            listLikeMatrixRestoreLine(mat, *atVectorListLikeMatrixNodePtr(&mat->lines_headers, del.second));
         else if (del.first == DELETING_TYPE_COLUMN)
-            listLikeMatrixRestoreColumn(mat, *atVectorListLikeMatrixNodeP(&mat->columns_headers, del.second));
+            listLikeMatrixRestoreColumn(mat, *atVectorListLikeMatrixNodePtr(&mat->columns_headers, del.second));
         else
             assert(false);
 

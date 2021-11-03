@@ -1,18 +1,13 @@
 #include <stdio.h>
-#include "exact_cover/exactcover.h"
-#include "vector/vector.h"
-#include "vector/algorithms.h"
 #include "greeklatinsquare/greeklatinsquare.h"
 
 #include <string.h>
-#include <stdlib.h>
-#include "user_interacts/user_interactions.h"
+#include "gen_lib/user_interacts/user_interactions.h"
 
 void test()
 {
     FILE * in = stdin;
     int n;
-    int i = 0;
     n = getValue(in);
     for (int i = 0; i < n; ++i)
     {
@@ -59,5 +54,4 @@ int main(int argc, char * argv[])
     printfLatinSquare(&ort);
     return 0;
 
-    return 0;
 }

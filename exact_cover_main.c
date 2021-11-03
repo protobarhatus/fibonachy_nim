@@ -1,8 +1,8 @@
 #include "exact_cover/exactcover.h"
-#include "vector/vector.h"
+#include "gen_lib/vector/vector.h"
 #include <stdio.h>
-#include "user_interacts/user_interactions.h"
-#include "vector/algorithms.h"
+#include "gen_lib/user_interacts/user_interactions.h"
+#include "gen_lib/vector/algorithms.h"
 
 int main()
 {
@@ -28,6 +28,9 @@ int main()
 
         printfVectorInt("", &res);
     }
+
+    destructVectorVectorInt(&mat);
+    destructVectorInt(&res);
 
 }
 

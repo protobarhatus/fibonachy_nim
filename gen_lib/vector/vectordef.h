@@ -5,15 +5,10 @@
 #include "arrayint.h"
 #include <stdlib.h>
 #include <string.h>
-
-
-typedef void * (*CopyFunction)(void * dest, const void * src, size_t n);
-typedef void * (*MoveFunction)(void * dest, void * src, size_t n);
-typedef void (*DestructFunction)(void * el);
+#include "../types_and_functions_declarations/type_declaration.h"
 
 //<"=" == move>
 //<copy by function>
-//usually i make structures in UpperCamelCase, but now its exception cause std::vector and cause Vector may conflict with geometrical thinq
 
 struct vector_struct
 {
@@ -21,103 +16,83 @@ struct vector_struct
     void * vec;
     int size;
     int allocated_size;
-    int element_size;
-    //vector does not own it and doesn't response for callocing and deleting it
-    ArrayInt * stack_version;
 
-    CopyFunction cpy_func;
-    DestructFunction destruct_function;
-    MoveFunction move_function;
+    const TypePresenterContainer * type;
 };
-typedef struct vector_struct vector;
+typedef struct vector_struct Vector;
 
-//In initizialization and pushBack It will destruct data that is provided in arguments, so provide only as rvalue
-//but it will not move it but copy
-vector defaultVectorCalloc(int size, void * def_value, int el_size, CopyFunction cpy_func, DestructFunction destr_f, MoveFunction move_f);
-vector * callocDefaultVector(int size, void * def_value, int el_size, CopyFunction cpy_func, DestructFunction destr_f, MoveFunction move_f);
 
-vector VectorAsArrayWrap(ArrayInt * arr);
-vector * callocVectorAsArrayWrap(ArrayInt * arr);
+//it will copy all values except first, which will be moved.
+//if size is zero, def_value will be destroyed, BUT NOT freed.
+//the best to make vector with zero size is call emptyVector().
+//to make vector with some positive size, but not create elements, may provide def_value as NULL
+//then it will be ignored. vector will calloc necessary space but will not fill it
+Vector defaultVectorCalloc(int size, void * def_value, const TypePresenterContainer * type);
+Vector * callocDefaultVector(int size, void * def_value, const TypePresenterContainer * type);
 
-vector copyVector(const vector * cop);
-vector* callocCopyVector(const vector * cop);
+Vector defaultVectorWithStrictSize(int size, void * def_value, const TypePresenterContainer * type);
 
-vector moveVector(vector * mov);
-static inline void * atVector(vector * obj, int i);
-static inline void VectorPopBack(vector * vec)
+
+Vector emptyVector(const TypePresenterContainer * type);
+
+Vector copyVector(const Vector * cop);
+Vector* callocCopyVector(const Vector * cop);
+
+Vector moveVector(Vector * mov);
+static inline void * atVector(Vector * obj, int i);
+static inline void VectorPopBack(Vector * vec)
 {
     if (vec->size == 0)
         return;
-    vec->destruct_function(atVector(vec, vec->size - 1));
+    vec->type->destruct_function(atVector(vec, vec->size - 1));
     vec->size--;
 
 }
 
-void destructVector(vector * obj);
-void deleteVector(vector ** obj);
+void destructVector(Vector * obj);
+void deleteVector(Vector ** obj);
 
-static inline void * atVector(vector * obj, int i)
+static inline void * atVector(Vector * obj, int i)
 {
     assert(obj->size > i);
     assert(i >= 0);
-    return obj->vec + i * obj->element_size;
+    return obj->vec + i * obj->type->element_size;
 }
-static inline const void * catVector(const vector * obj, int i)
+static inline const void * catVector(const Vector * obj, int i)
 {
     assert(i < obj->size);
     assert(i >= 0);
-    return obj->vec + i * obj->element_size;
+    return obj->vec + i * obj->type->element_size;
 }
 
-static inline void * atVectorAsArrayInt(vector * obj, int i)
-{
-    assert(obj->stack_version != NULL);
-    return obj->stack_version->at(obj->stack_version, i);
-}
 
-static inline const void * catVectorAsArrayInt(const vector * obj, int i)
-{
-    assert(obj->stack_version != NULL);
-    return obj->stack_version->cat(obj->stack_version, i);
-}
-
-static inline int VectorGetSize(const vector * obj)
+static inline int VectorGetSize(const Vector * obj)
 {
     return obj->size;
 }
-static inline bool VectorCanPushBack(const vector * obj)
+static inline bool VectorCanPushBack(const Vector * obj)
 {
     return true;
 }
-void VectorPushBack(vector * obj, void * el);
+//el will be moved not copied
+void VectorPushBack(Vector * obj, void * el);
 
-int VectorAsArrayIntGetSize(const vector * obj);
-bool VectorAsArrayIntCanPushBack(const vector * obj);
-void VectorAsArrayIntPushBack(vector * obj, int el);
+int VectorAsArrayIntGetSize(const Vector * obj);
+bool VectorAsArrayIntCanPushBack(const Vector * obj);
+void VectorAsArrayIntPushBack(Vector * obj, int el);
 
-void dummyDestructor(void * );
 
-void VectorResize(vector * vec, int new_size);
+
+void VectorResize(Vector * vec, int new_size);
 
 void freeBehind(void ** data);
 
-void nonConstMemcpyDecl(void * dest, void * src, size_t n);
 
-//If type TN is SIMPLE then it means that copy is completed by memcpy and destruction is unneded cause it don't need
-//to free some data inside
-//but functions copy##UCN and destruct##UCN still have to exist
-//otherwise,
-//User must provide functions copy##UCN and destruct##UCN except if TN is Vector itself
-//then if initialized in right order, that functions will be auto generated
-//if its pointer on simple type then destroying is just calling free().
-//pointers on non simple types must provide appropriate cpyFunc and destrFunc
-//cpyFunc means FULL copy, (with copy of data behind inside pointers)
-#define SIMPLE_TYPE &memcpy, &dummyDestructor, &nonConstMemcpyDecl
-#define POINTER_TYPE(UCN) &copyPtrVal##UCN, &freeBehind, &nonConstMemcpyDecl
-#define STRUCT_TYPE(UCN) &cpyFunc##UCN, &destrFunc##UCN, &moveFunc##UCN
 
-#define MAKE_VEC(TN, UCN, ___COPY_FUNCTION_PTR___, ___DESTRUCT_FUNCTION_PTR___, ___MOVE_FUNCTION_PTR___) struct Vector##UCN##_struct {                                 \
-    vector vec;                                                                         \
+//so MAKE_VEC assumes that type has been declared
+
+#define MAKE_VEC(TN, UCN) struct Vector##UCN##_struct {                                 \
+    Vector vec;                                                                         \
     TN * (*at)(struct Vector##UCN##_struct * obj, int i);                                   \
     const TN * (*cat)(const struct Vector##UCN##_struct * obj, int i);                     \
     int (*getSize)(const struct Vector##UCN##_struct * obj);                                \
@@ -128,27 +103,10 @@ void nonConstMemcpyDecl(void * dest, void * src, size_t n);
     void (*popBack)(struct Vector##UCN##_struct * obj);                                                                                                                \
     void (*resize)(struct Vector##UCN##_struct * obj, int new_size);\
 } ;                                                                                                     \
-typedef struct Vector##UCN##_struct Vector##UCN ;                                                               \
-                                                                                                    \
-   TN copy##UCN(const TN * src);                                                           \
-   /*return value absolutely doesn't matter but it need to be the same type with memcpy*/                                                                                                 \
-   static inline void* cpyFunc##UCN(void * dest, const void * src, size_t n)                                \
-   {                                                                                                    \
-        *((TN *)dest) = copy##UCN((const TN*)src);                                                              \
-        return NULL;                                                                                        \
-   }                                                                                    \
-                                                                                        \
-     void destruct##UCN(TN * el);                                                                                   \
-    static inline void destrFunc##UCN(void * el)                                        \
-    {                                                                                   \
-         destruct##UCN((TN*)el);                                                                               \
-    }                                                                                                                                                                  \
-     TN move##UCN(TN * el);                                                                                                                                          \
-      static inline void* moveFunc##UCN(void * dest, void * src, size_t n)                                                                                              \
-      {                                                                                                                                                                \
-           *((TN *)dest) = move##UCN((TN*)src);                                                                                                                        \
-           return NULL;                                                             \
-      }                                                                                                                                                                \
+typedef struct Vector##UCN##_struct Vector##UCN ;                                                                                                                      \
+                                                                                                                                                                       \
+ DECLARE_STRUCT_INLINE_TYPE(Vector##UCN, Vector##UCN)  ;                                                                                                 \
+     /*guess i dont need it*/                                                                                                                                                        \
    static inline void* copyPtrVal##UCN(void * dest, const void * src, size_t n)                                                                                                       \
    {                                                                                                                                                                   \
         dest = calloc(1, n);                                                                                                                                      \
@@ -182,13 +140,12 @@ static inline void vector##UCN##PopBack(Vector##UCN * obj) {                    
 static inline void vector##UCN##Resize(Vector##UCN * obj, int new_size) {                                                                                                            \
     VectorResize(&obj->vec,  new_size);                                                                                                                                                                       \
 }\
-/* it STILL makes copy (full copy), BUT it frees data from pointer */                                                                                                            \
 static inline void vector##UCN##PushBackCalloced(Vector##UCN * obj, TN * el)            \
 {                                                                                       \
     VectorPushBack(&obj->vec, (void *)el);                                           \
     free(el);                                                                                                \
 }                                                                           \
-/* in this kind of wrapping, there is only one correct combination of functions and so all it copy and assign work is concentrated only here*/                                                                                                                                \
+                                                                                                                               \
 static inline void assignFunctionsVector##UCN(Vector##UCN * obj) {                                                                  \
     obj->at = &atVector##UCN ;                                                                                      \
     obj->cat = &catVector##UCN ;                                                                                    \
@@ -202,22 +159,27 @@ static inline void assignFunctionsVector##UCN(Vector##UCN * obj) {              
 }                                                                                                                       \
 static inline Vector##UCN defaultVector##UCN##Calloc(int size, TN def_value) {                                                              \
     Vector##UCN res;                                                                                        \
-    res.vec = defaultVectorCalloc(size, (void *)&def_value, sizeof(TN), ___COPY_FUNCTION_PTR___, ___DESTRUCT_FUNCTION_PTR___, ___MOVE_FUNCTION_PTR___);                                                    \
+    res.vec = defaultVectorCalloc(size, (void *)&def_value, TYPE_##UCN());                                                    \
     assignFunctionsVector##UCN(&res);                                                                                                   \
     return res;                                                                                                     \
 }                                                                                                                           \
 static inline Vector##UCN * callocDefaultVector##UCN (int size, TN def_value) {                                                     \
     Vector##UCN * res = (Vector##UCN *)calloc(1, sizeof(Vector##UCN));                                                          \
-    res->vec = defaultVectorCalloc(size, (void *)&def_value, sizeof(TN), ___COPY_FUNCTION_PTR___, ___DESTRUCT_FUNCTION_PTR___, ___MOVE_FUNCTION_PTR___);                                                                   \
+    res->vec = defaultVectorCalloc(size, (void *)&def_value, TYPE_##UCN());                                                                   \
     assignFunctionsVector##UCN(res);                                                                                                \
     return res;                                                                                                                             \
 }                                                                                       \
-static inline Vector##UCN vector##UCN##AsArrayWrap(ArrayInt * arr)                      \
-{                                                                                       \
-         Vector##UCN res;                                                               \
-         res.vec = VectorAsArrayWrap(arr);                                              \
-         assignFunctionsVector##UCN(&res);                                                \
-         return res;                                                                    \
+static inline Vector##UCN emptyVector##UCN() {                                          \
+    Vector##UCN res;                                                                    \
+    res.vec = emptyVector(TYPE_##UCN());                                                            \
+    return res;\
+}\
+static inline Vector##UCN createVector##UCN##FromVector(Vector * vec) {                 \
+    Vector##UCN res;                                                                    \
+    res.vec = *vec;                                                                     \
+    vec->vec = NULL;                                                                    \
+    assignFunctionsVector##UCN(&res);                                                   \
+    return res;\
 }                                                                                       \
 static inline Vector##UCN copyVector##UCN(const Vector##UCN * cop) {                    \
     Vector##UCN res;                                                                    \

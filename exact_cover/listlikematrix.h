@@ -1,7 +1,7 @@
 #ifndef EXACT_COVER_LISTLIKEMATRIX_H
 #define EXACT_COVER_LISTLIKEMATRIX_H
-#include "../vector/vector.h"
-#include "../vector/algorithms.h"
+#include "../gen_lib/vector/vector.h"
+#include "../gen_lib/vector/algorithms.h"
 
 //ListLikeMatrix is sparse matrix that works on dancing links algorithm
 //it is created from regular VectorVectorInt, where nodes are exist only when it is one there
@@ -27,10 +27,17 @@ struct ListLikeMatrixNode_struct
 
     bool active;
 };
+
 typedef struct ListLikeMatrixNode_struct ListLikeMatrixNode;
 typedef ListLikeMatrixNode* ListLikeMatrixLineIterator;
 typedef ListLikeMatrixNode* ListLikeMatrixColumnIterator;
 typedef ListLikeMatrixNode* ListLikeMatrixAnyIterator;
+typedef ListLikeMatrixNode* ListLikeMatrixNodeRef;
+
+DECLARE_SIMPLE_TYPE(ListLikeMatrixNode, ListLikeMatrixNode);
+DECLARE_SIMPLE_TYPE(ListLikeMatrixNode*, ListLikeMatrixNodeRef);
+
+CREATE_UNIQUE_POINTER(ListLikeMatrixNode*, ListLikeMatrixNode)
 
 int getLineOfIterator(ListLikeMatrixAnyIterator it);
 
@@ -39,10 +46,10 @@ ListLikeMatrixNode* callocDefaultListLikeMatrixNode(int line, int column, ListLi
 void eraseListLikeMatrixNodeFromLine(ListLikeMatrixNode * node);
 void eraseListLikeMatrixNodeFromColumn(ListLikeMatrixNode * node);
 
-MAKE_VECTOR(ListLikeMatrixNode*, ListLikeMatrixNodeP, POINTER_TYPE(ListLikeMatrixNodeP));
-MAKE_VECTOR(ListLikeMatrixNode*, ListLikeMatrixNodeRef, SIMPLE_TYPE);
+MAKE_VECTOR(ListLikeMatrixNodePtr, ListLikeMatrixNodePtr);
+MAKE_VECTOR(ListLikeMatrixNodeRef, ListLikeMatrixNodeRef);
 
-MAKE_VECTOR(VectorListLikeMatrixNodeP, VectorListLikeMatrixNodeP, STRUCT_TYPE(VectorListLikeMatrixNodeP))
+MAKE_VECTOR(VectorListLikeMatrixNodePtr, VectorListLikeMatrixNodePtr)
 
 enum DeletingType
 {
@@ -58,13 +65,13 @@ struct ListLikeMatrix_struct
 
     const VectorVectorInt * matrix_replace;
 
-    VectorVectorListLikeMatrixNodeP matrix;
+    VectorVectorListLikeMatrixNodePtr matrix;
 
-    VectorListLikeMatrixNodeP columns_headers;
-    VectorListLikeMatrixNodeP lines_headers;
+    VectorListLikeMatrixNodePtr columns_headers;
+    VectorListLikeMatrixNodePtr lines_headers;
     //last indexes belong to headers
-    VectorListLikeMatrixNodeP columns_finishers;
-    VectorListLikeMatrixNodeP lines_finishers;
+    VectorListLikeMatrixNodePtr columns_finishers;
+    VectorListLikeMatrixNodePtr lines_finishers;
     VectorInt amount_of_ones_in_columns;
 
     int lines, columns;
@@ -171,20 +178,20 @@ void listLikeMatrixRestoreColumn(ListLikeMatrix * mat, ListLikeMatrixColumnItera
 
 static inline ListLikeMatrixLineIterator listLikeMatrixGetLineBegin(ListLikeMatrix * mat)
 {
-    return *atVectorListLikeMatrixNodeP(&mat->lines_headers, mat->lines_start);
+    return *atVectorListLikeMatrixNodePtr(&mat->lines_headers, mat->lines_start);
 }
 static inline ListLikeMatrixColumnIterator listLikeMatrixGetColumnBegin(ListLikeMatrix * mat)
 {
-    return *atVectorListLikeMatrixNodeP(&mat->columns_headers, mat->columns_start);
+    return *atVectorListLikeMatrixNodePtr(&mat->columns_headers, mat->columns_start);
 }
 
 static inline ListLikeMatrixLineIterator listLikeMatrixGetLineEnd(ListLikeMatrix * mat)
 {
-    return *atVectorListLikeMatrixNodeP(&mat->lines_finishers, mat->absolute_lines);
+    return *atVectorListLikeMatrixNodePtr(&mat->lines_finishers, mat->absolute_lines);
 }
 static inline ListLikeMatrixColumnIterator listLikeMatrixGetColumnEnd(ListLikeMatrix * mat)
 {
-    return *atVectorListLikeMatrixNodeP(&mat->columns_finishers, mat->absolute_columns);
+    return *atVectorListLikeMatrixNodePtr(&mat->columns_finishers, mat->absolute_columns);
 }
 
 static inline ListLikeMatrixColumnIterator listLikeMatrixGetColumnHeader(ListLikeMatrixAnyIterator it)

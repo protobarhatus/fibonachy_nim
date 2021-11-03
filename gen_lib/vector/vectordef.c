@@ -3,93 +3,108 @@
 #include "stdlib.h"
 #include "string.h"
 
-void nonConstMemcpyDecl(void * dest, void * src, size_t n)
-{
-    memcpy(dest, (const void *)src, n);
-}
 
-static void locateMem(vector * obj, int amount_of_el, int el_size)
+
+static void locateMem(Vector * obj, int amount_of_el, int el_size)
 {
     obj->size = amount_of_el;
     if (amount_of_el == 0)
         obj->allocated_size = 8;
     obj->allocated_size = 2 * obj->size;
     obj->vec = (void *)calloc(obj->allocated_size, el_size);
-    obj->element_size = el_size;
+
 }
 
-vector defaultVectorCalloc(int size, void * def_value, int el_size, CopyFunction cpy_func, DestructFunction destr, MoveFunction move_f)
+Vector defaultVectorCalloc(int size, void * def_value, const TypePresenterContainer * type)
 {
-    vector obj;
-    locateMem(&obj, size, el_size);
-    if (size != 0)
+    Vector obj;
+    locateMem(&obj, size, type->element_size);
+    if (size != 0 && def_value != NULL)
     {
-        for (int i = 1; i < obj.allocated_size; ++i)
-            cpy_func(obj.vec + i * el_size, def_value, el_size);
-        move_f(obj.vec, def_value, el_size);
+        for (int i = 1; i < obj.size; ++i)
+            type->cpy_func(obj.vec + i * type->element_size, def_value, type->element_size);
+        type->move_function(obj.vec, def_value, type->element_size);
     }
-    obj.stack_version = NULL;
-    obj.cpy_func = cpy_func;
-    obj.destruct_function = destr;
-    obj.move_function = move_f;
+    else
+    {
+        if (def_value != NULL)
+            type->destruct_function(def_value);
+    }
+
+    obj.type = type;
 
     return obj;
 }
 
-vector * callocDefaultVector(int size, void * def_value, int el_size, CopyFunction cpy_func, DestructFunction destr, MoveFunction move_func)
+Vector * callocDefaultVector(int size, void * def_value, const TypePresenterContainer * type)
 {
-    vector *obj = (vector*)calloc(1, sizeof(vector));
-    locateMem(obj, size, el_size);
-    if (size != 0)
+    Vector *obj = (Vector*)calloc(1, sizeof(Vector));
+    locateMem(obj, size, type->element_size);
+    if (size != 0 && def_value != NULL)
     {
         for (int i = 1; i < obj->allocated_size; ++i)
-            cpy_func(obj->vec + i * el_size, def_value, el_size);
-        move_func(obj->vec, def_value, el_size);
+            type->cpy_func(obj->vec + i * type->element_size, def_value, type->element_size);
+        type->move_function(obj->vec, def_value, type->element_size);
     }
-    obj->stack_version = NULL;
-    obj->cpy_func = cpy_func;
-    obj->destruct_function = destr;
-    obj->move_function = move_func;
+    else
+        free(def_value);
+
+    obj->type = type;
     return obj;
 }
 
-vector copyVector(const vector * cop)
+Vector defaultVectorWithStrictSize(int size, void * def_value, const TypePresenterContainer * type)
 {
-    vector res;
-    res.vec = calloc(cop->allocated_size, cop->element_size);
+    Vector obj;
+    obj.size = size;
+    obj.allocated_size = obj.size;
+    obj.vec = (void *)calloc(obj.allocated_size, type->element_size);
+
+
+    if (size != 0 && def_value != NULL)
+    {
+        for (int i = 1; i < obj.allocated_size; ++i)
+            type->cpy_func(obj.vec + i * type->element_size, def_value, type->element_size);
+        type->move_function(obj.vec, def_value, type->element_size);
+    }
+    else
+        free(def_value);
+
+    obj.type = type;
+
+    return obj;
+}
+
+Vector copyVector(const Vector * cop)
+{
+    Vector res;
+    if (cop->allocated_size > 0)
+        res.vec = calloc(cop->allocated_size, cop->type->element_size);
     for (int i = 0; i < cop->size; ++i)
-        cop->cpy_func(res.vec + i * cop->element_size, cop->vec + i * cop->element_size, cop->element_size);
+        cop->type->cpy_func(res.vec + i * cop->type->element_size, cop->vec + i * cop->type->element_size, cop->type->element_size);
     res.size = cop->size;
     res.allocated_size = cop->allocated_size;
-    res.stack_version = cop->stack_version;
-    res.element_size = cop->element_size;
 
 
-    res.cpy_func = cop->cpy_func;
-    res.destruct_function = cop->destruct_function;
-    res.move_function = cop->move_function;
+    res.type = cop->type;
     return res;
 }
 
-vector moveVector(vector * cop)
+Vector moveVector(Vector * cop)
 {
-    vector res;
+    Vector res;
     res.vec = cop->vec;
     cop->vec = NULL;
     res.size = cop->size;
     res.allocated_size = cop->allocated_size;
-    res.stack_version = cop->stack_version;
-    res.element_size = cop->element_size;
 
 
-    res.cpy_func = cop->cpy_func;
-    res.destruct_function = cop->destruct_function;
-    res.move_function = cop->move_function;
+    res.type = cop->type;
     return res;
 }
-vector* callocCopyVector(const vector * cop)
+Vector* callocCopyVector(const Vector * cop)
 {
-    vector * res = calloc(1, sizeof(vector));
+    Vector * res = calloc(1, sizeof(Vector));
     *res = copyVector(cop);
     return res;
 
@@ -97,23 +112,23 @@ vector* callocCopyVector(const vector * cop)
 
 
 
-void VectorPushBack(vector * obj, void * el)
+void VectorPushBack(Vector * obj, void * el)
 {
     assert(VectorCanPushBack(obj));
     if (obj->size < obj->allocated_size)
     {
-        obj->move_function(obj->vec + obj->size * obj->element_size, el, obj->element_size);
+        obj->type->move_function(obj->vec + obj->size * obj->type->element_size, el, obj->type->element_size);
         ++obj->size;
         return;
     }
 
     obj->allocated_size *= 2;
     obj->allocated_size += 1;
-    void * call_res = realloc(obj->vec, obj->allocated_size * obj->element_size);
+    void * call_res = realloc(obj->vec, obj->allocated_size * obj->type->element_size);
     assert(call_res != NULL);
     if (call_res == obj->vec)
     {
-        obj->move_function(obj->vec + obj->size * obj->element_size, el, obj->element_size);
+        obj->type->move_function(obj->vec + obj->size * obj->type->element_size, el, obj->type->element_size);
         ++obj->size;
         return;
     }
@@ -121,7 +136,7 @@ void VectorPushBack(vector * obj, void * el)
     {
         obj->vec = call_res;
 
-        obj->move_function(obj->vec + obj->size * obj->element_size, el, obj->element_size);
+        obj->type->move_function(obj->vec + obj->size * obj->type->element_size, el, obj->type->element_size);
         ++obj->size;
         return;
     }
@@ -137,80 +152,44 @@ void VectorPushBack(vector * obj, void * el)
     ++obj->size;*/
 }
 
-int VectorAsArrayIntGetSize(const vector * obj)
-{
-    assert(obj->stack_version != NULL);
-    return obj->stack_version->getSize(obj->stack_version);
-}
-bool VectorAsArrayIntCanPushBack(const vector * obj)
-{
-    assert(obj->stack_version != NULL);
-    return obj->stack_version->canPushBack(obj->stack_version);
-}
-void VectorAsArrayIntPushBack(vector * obj, int el)
-{
-    assert(obj->stack_version != NULL);
-    return obj->stack_version->pushBack(obj->stack_version, el);
-}
+
 
 void freeBehind(void ** data)
 {
     free(*data);
 }
 
-void destructVector(vector * obj)
+void destructVector(Vector * obj)
 {
     if (obj->vec != NULL)
     {
         for (int i = 0; i < obj->size; ++i)
-            obj->destruct_function(obj->vec + i * obj->element_size);
+            obj->type->destruct_function(obj->vec + i * obj->type->element_size);
         free(obj->vec);
     }
     obj->vec = NULL;
-    obj->stack_version = NULL;
+
 }
 
-void deleteVector(vector ** obj)
+void deleteVector(Vector ** obj)
 {
     destructVector(*obj);
     free(*obj);
 }
 
-vector VectorAsArrayWrap(ArrayInt * arr)
+Vector emptyVector(const TypePresenterContainer * type)
 {
-    vector res;
-    res.stack_version = arr;
-    res.size = arr->getSize(arr);
+    Vector res;
+    res.size = 0;
+    res.allocated_size = 0;
+    res.type = type;
     res.vec = NULL;
-    res.allocated_size = -1;
-
-    res.cpy_func = &memcpy;
-    res.destruct_function = &dummyDestructor;
-
-    return res;
-}
-vector * callocVectorAsArrayWrap(ArrayInt * arr)
-{
-    vector * res = (vector *)calloc(1, sizeof(vector));
-
-    res->stack_version = arr;
-    res->size = arr->getSize(arr);
-    res->vec = NULL;
-    res->allocated_size = -1;
-
-    res->cpy_func = &memcpy;
-    res->destruct_function = &dummyDestructor;
     return res;
 }
 
-void dummyDestructor(void * r)
-{
-
-}
 
 
-
-void VectorResize(vector * vec, int new_size)
+void VectorResize(Vector * vec, int new_size)
 {
     if (vec->allocated_size < new_size)
     {
@@ -222,7 +201,7 @@ void VectorResize(vector * vec, int new_size)
         vec->vec = realloc(vec, vec->allocated_size*sizeof(int));
     }
     for (int i = vec->size - 1; i >= new_size; --i)
-        vec->destruct_function(atVector(vec, i));
+        vec->type->destruct_function(atVector(vec, i));
     vec->size = new_size;
 }
 

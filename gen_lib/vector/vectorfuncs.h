@@ -2,7 +2,7 @@
 #define EXACT_COVER_VECTORFUNCS_H
 #include "vectordef.h"
 
-void sortVector(vector * vec, int (*comparator)(const void * a, const void * b));
+void sortVector(Vector * vec, int (*comparator)(const void * a, const void * b));
 
 
 #define MAKE_VECTOR_FUNCTIONS(TN, UCN)                                                                                              \

@@ -10,9 +10,10 @@ enum ExecutionLogMode_enum
 typedef enum ExecutionLogMode_enum ExecutionLogMode;
 
 ExecutionLogMode chooseLogMode(int argc, char * argv[]);
-
 struct _IO_FILE;
 typedef struct _IO_FILE FILE;
 int getValue(FILE * input);
+
+
 
 #endif //GREEKLATINGSQ_USER_INTERACTIONS_H

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
-#include "../user_interacts/user_interactions.h"
+#include "../gen_lib/user_interacts/user_interactions.h"
 
 GreekLatinSquare defaultGreekLatinSquare(int n)
 {

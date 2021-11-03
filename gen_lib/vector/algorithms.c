@@ -39,5 +39,32 @@ void scanfVectorVectorInt(int lin, int col, VectorVectorInt * vec)
         scanfVectorInt(col, vec->at(vec, i));
     }
 }
+static long long int iabs(long long int a)
+{
+    return a > 0 ? a : -a;
+}
+long long int eu_mod(long long int x, long long int y)
+{
+    long long int r;
+    assert(y != 0);
+    r = x % y;
+    if (r < 0)
+        r += iabs(y);
+    return r;
+}
 
-GEN_DUMMY_FUNCS_FOR_SIMPLE_TYPE(PairInt, PairInt)
+long long int gcd(long long int x, long long int y)
+{
+    x = iabs(x);
+    y = iabs(y);
+    long long int q;
+    assert(y != 0);
+    q = eu_mod(x, y);
+    while (q != 0)
+    {
+        x = y;
+        y = q;
+        q = eu_mod(x, y);
+    }
+    return y;
+}
