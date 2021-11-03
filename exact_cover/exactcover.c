@@ -63,7 +63,7 @@ static ListLikeMatrixColumnIterator columnWithLeastOnes(ListLikeMatrix * matrix)
         int amount = listLikeMatrixGetAmountOfOnesInColumn(matrix, it);
         if (amount == 0)
             return it;
-        if (amount <= min_ones)
+        if (amount < min_ones)
         {
             min_ones = amount;
             res = it;
@@ -76,6 +76,8 @@ static bool recursivePickOutExactCover(ListLikeMatrix * matrix, VectorInt * resu
 {
     if (listLikeMatrixGetColumns(matrix) == 0)
         return true;
+    if (matrix->lines == 0 && matrix->columns > 0)
+        return false;
     ListLikeMatrixColumnIterator c = columnWithLeastOnes(matrix);
     if (c == NULL)
         return true;

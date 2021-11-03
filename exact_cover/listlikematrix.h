@@ -141,6 +141,7 @@ int getRealLineIndex(ListLikeMatrixColumnIterator it);
 void listLikeMatrixDeleteLine(ListLikeMatrix * mat, ListLikeMatrixLineIterator line);
 void listLikeMatrixDeleteColumn(ListLikeMatrix * mat, ListLikeMatrixColumnIterator column);
 
+
 static inline int listLikeMatrixGetLines(const ListLikeMatrix * mat)
 {
     return mat->lines;
