@@ -63,7 +63,7 @@ static ListLikeMatrixColumnIterator columnWithLeastOnes(ListLikeMatrix * matrix)
         int amount = listLikeMatrixGetAmountOfOnesInColumn(matrix, it);
         if (amount == 0)
             return it;
-        if (amount < min_ones)
+        if (amount <= min_ones)
         {
             min_ones = amount;
             res = it;
