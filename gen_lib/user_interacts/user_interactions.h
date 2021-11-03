@@ -1,6 +1,6 @@
 #ifndef GREEKLATINGSQ_USER_INTERACTIONS_H
 #define GREEKLATINGSQ_USER_INTERACTIONS_H
-#include <stdio.h>
+
 enum ExecutionLogMode_enum
 {
     EXECUTION_LOG_MODE_NONE,
@@ -11,6 +11,8 @@ typedef enum ExecutionLogMode_enum ExecutionLogMode;
 
 ExecutionLogMode chooseLogMode(int argc, char * argv[]);
 
+struct _IO_FILE;
+typedef struct _IO_FILE FILE;
 int getValue(FILE * input);
 
 #endif //GREEKLATINGSQ_USER_INTERACTIONS_H

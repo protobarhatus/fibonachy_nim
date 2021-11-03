@@ -20,8 +20,14 @@ int main()
     }
 
     VectorInt res = makeExactCover(&mat);
-    printfVectorInt("", &res);
+    if (res.getSize(&res) == 0)
+        printf("NO COVER\n");
+    else
+    {
+        printf("%d ", res.getSize(&res));
 
+        printfVectorInt("", &res);
+    }
 
 }
 

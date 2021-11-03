@@ -3,6 +3,19 @@
 #include "../vector/vector.h"
 #include "../vector/algorithms.h"
 
+//ListLikeMatrix is sparse matrix that works on dancing links algorithm
+//it is created from regular VectorVectorInt, where nodes are exist only when it is one there
+//outer code have no right to data in it by indexes, so for all interaction must use iterators
+//difference between LineIterators, ColumnIterators and AnuIterators is just for selfdocumentation
+//work with deleting and restoring goes through restoring_labels
+//to save state in exact moment, user have to call makeRestoringLabel().
+//then, deleting lines and columns will be automatically track theirs log.
+//to restore matrix to the state must call restoreToLabel(). Labels work as stack.
+//User should not call restoreLine() or restoreColumn() if he works with labels, because
+//if called in wrong order (if users doesn't saves order but why would he do it if labels exist)
+//then it causes unpredictable behaviour
+
+
 struct ListLikeMatrixNode_struct
 {
     int line, column;

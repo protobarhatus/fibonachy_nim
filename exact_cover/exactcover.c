@@ -3,11 +3,23 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-bool recursivePickOutExactCover(ListLikeMatrix * matrix, VectorInt * result);
+/* exact cover is is solved by algorithm X:
+ * makeExactCover is interface wrapping that sets all necessary structures like translates simple matrix to ListLikeMatrix (that is sparse matrix)
+ * and call actual algorithm:
+ * in recursivePickOutExactCover it chooses column with least amount of ones in it
+ * and goes through all rows, calling checkExactCoverForChoosenRow() for each of them
+ * if checkExactCoverForChoosenRow() returns successfully then this row is chosen right and recursivePickOutExactCover can return successfully
+ * In checkExactCoverForChoosenRow() it saves current matrix state (by making label),
+ * deletes (in deleteAllContradictoryRowsAndColumnsForChoosenLine)
+ * all columns where chosen row I has ones, and all rows that have ones in that columns and
+ * launches algorithm recursively on reduced matrix. if its successful, returns success, otherwise restores matrix and terminates this line
+ *
+ */
 
-bool includingLineDeleteCrissCrossAppleSause(ListLikeMatrix * matrix, ListLikeMatrixLineIterator row)
+static bool recursivePickOutExactCover(ListLikeMatrix * matrix, VectorInt * result);
+
+static void deleteAllContradictoryRowsAndColumnsForChoosenLine(ListLikeMatrix * matrix, ListLikeMatrixLineIterator row)
 {
-    bool delete_row = false;
     //assuming row is header
     for (ListLikeMatrixLineIterator col = listLikeMatrixIncrementLineIterator(row); !listLikeMatrixIsFinish(col);
             col = listLikeMatrixIncrementLineIterator(col))
@@ -15,30 +27,24 @@ bool includingLineDeleteCrissCrossAppleSause(ListLikeMatrix * matrix, ListLikeMa
         for (ListLikeMatrixColumnIterator downhill_col_it = listLikeMatrixIncrementColumnIterator(listLikeMatrixGetColumnHeader(col));
              !listLikeMatrixIsFinish(downhill_col_it); downhill_col_it = listLikeMatrixIncrementColumnIterator(downhill_col_it))
         {
-            delete_row = true;
             if (downhill_col_it == col)
                 continue;
             listLikeMatrixDeleteLine(matrix, downhill_col_it);
         }
         listLikeMatrixDeleteColumn(matrix, col);
     }
-    // if (delete_raw)
     listLikeMatrixDeleteLine(matrix, row);
-    return true;
 }
 
 
 
 
-bool checkExactCoverForChoosenRow(ListLikeMatrix * matrix, ListLikeMatrixLineIterator row, VectorInt * result)
+static bool checkExactCoverForChoosenRow(ListLikeMatrix * matrix, ListLikeMatrixLineIterator row, VectorInt * result)
 {
-    bool delete_raw = false;
     listLikeMatrixMakeRestoringLabel(matrix);
 
-    delete_raw = includingLineDeleteCrissCrossAppleSause(matrix, row->line_header);
+    deleteAllContradictoryRowsAndColumnsForChoosenLine(matrix, row->line_header);
 
-    if (!delete_raw)
-        return false;
 
     bool res = recursivePickOutExactCover(matrix, result);
     if (!res)
@@ -47,7 +53,7 @@ bool checkExactCoverForChoosenRow(ListLikeMatrix * matrix, ListLikeMatrixLineIte
     return res;
 }
 
-ListLikeMatrixColumnIterator columnWithLeastOnes(ListLikeMatrix * matrix)
+static ListLikeMatrixColumnIterator columnWithLeastOnes(ListLikeMatrix * matrix)
 {
     int min_ones = listLikeMatrixGetLines(matrix) + 1;
     ListLikeMatrixColumnIterator res = NULL;
@@ -66,7 +72,7 @@ ListLikeMatrixColumnIterator columnWithLeastOnes(ListLikeMatrix * matrix)
     return res;
 }
 
-bool recursivePickOutExactCover(ListLikeMatrix * matrix, VectorInt * result)
+static bool recursivePickOutExactCover(ListLikeMatrix * matrix, VectorInt * result)
 {
     if (listLikeMatrixGetColumns(matrix) == 0)
         return true;
@@ -90,18 +96,36 @@ bool recursivePickOutExactCover(ListLikeMatrix * matrix, VectorInt * result)
 
 }
 
+static bool hasEmptyColumn(const VectorVectorInt * matrix)
+{
+    int width = dim(matrix, 2);
+    int height = matrix->getSize(matrix);
+    for (int i = 0; i < width; ++i)
+    {
+        bool has_non_zero = false;
+        for (int j = 0; j < height; ++j)
+        {
+            if (*matrix->cat(matrix, j, i) != 0)
+            {
+                has_non_zero = true;
+                break;
+            }
+        }
+        if (!has_non_zero)
+            return true;
+    }
+    return false;
+}
+
 VectorInt makeExactCover(const VectorVectorInt * matrix)
 {
+    //columns consisting entirely of zeroes will be just ignored by ListLikeMatrix so answer would be wrong, so need to check them manually
+    if (hasEmptyColumn(matrix))
+        return defaultVectorIntCalloc(0, 0);
     ListLikeMatrix exact_cover_matrix = defaultListLikeMatrix(matrix->getSize(matrix), dim(matrix, 2), matrix);
-    //*exact_cover_matrix.amount_of_ones_in_columns.at(&exact_cover_matrix.amount_of_ones_in_columns, 0) -= 1;
 
     VectorInt result = defaultVectorIntCalloc(0, 0);
 
-   // for (int i = 0; i < force_included->getSize(force_included); ++i)
-   // {
-  //      includingLineDeleteCrissCrossAppleSause(&exact_cover_matrix, getLineOfRealIndex(&exact_cover_matrix, *force_included->cat(force_included, i)));
-  //      result.pushBack(&result, *force_included->cat(force_included, i));
-   // }
 
     recursivePickOutExactCover(&exact_cover_matrix, &result);
 

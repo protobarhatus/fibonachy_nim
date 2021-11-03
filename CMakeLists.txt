@@ -4,9 +4,9 @@ project(fibonachy_nim C)
 set(CMAKE_C_STANDARD 99)
 
 include(exact_cover/CMakeLists.txt)
-include(vector/CMakeLists.txt)
+include(gen_lib/vector/CMakeLists.txt)
 include(greeklatinsquare/CMakeLists.txt)
-include(user_interacts/CMakeLists.txt)
+include(gen_lib/user_interacts/CMakeLists.txt)
 
 #add_subdirectory(exact_cover)
 #add_subdirectory (greeklatinsquare)

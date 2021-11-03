@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
-#include "../vector/vector.h"
-#include "../vector/algorithms.h"
 #include "../user_interacts/user_interactions.h"
 
 GreekLatinSquare defaultGreekLatinSquare(int n)
