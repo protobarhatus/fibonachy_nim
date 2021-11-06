@@ -1,7 +1,7 @@
-#include "gen_lib/user_interacts/user_interactions.h"
+#include "user_interacts/user_interactions.h"
 #include <stdio.h>
 #include "greeklatinsquare/greeklatinsquare.h"
-#include "gen_lib/vector/algorithms.h"
+#include "vector/algorithms.h"
 int main()
 {
     GreekLatinSquare sq;

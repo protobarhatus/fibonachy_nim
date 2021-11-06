@@ -94,12 +94,16 @@ static void fillLineSAndColumnsFinishers(ListLikeMatrix * mat, int lines, int co
 static void countAmountOfOnesOnColumns(ListLikeMatrix * mat)
 {
     mat->amount_of_ones_in_columns = defaultVectorIntCalloc(mat->columns, 0);
+
+    ListLikeMatrixLineIterator lit = *mat->columns_headers.at(&mat->columns_headers, 0);
     for (int i = 0; i < mat->columns; ++i)
     {
         int num = 0;
-        for (ListLikeMatrixColumnIterator it = mat->iterateOnColumn(mat->columnsBegin(mat)); !mat->isFinish(it); it = mat->iterateOnColumn(it))
+        for (ListLikeMatrixColumnIterator it = mat->iterateOnColumn(lit);
+                !listLikeMatrixIsFinish(it); it = listLikeMatrixIncrementColumnIterator(it))
             ++num;
         *mat->amount_of_ones_in_columns.at(&mat->amount_of_ones_in_columns, i) = num;
+        lit = listLikeMatrixIncrementLineIterator(lit);
     }
 }
 

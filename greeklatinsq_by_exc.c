@@ -2,7 +2,7 @@
 #include "greeklatinsquare/greeklatinsquare.h"
 
 #include <string.h>
-#include "gen_lib/user_interacts/user_interactions.h"
+#include "user_interacts/user_interactions.h"
 
 void test()
 {

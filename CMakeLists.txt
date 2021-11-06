@@ -25,3 +25,5 @@ target_link_libraries(exact_cover_to_square m)
 target_link_libraries(orthogonal_by_exact_cover m)
 target_link_libraries(generator m)
 target_link_libraries(sudoku m)
+
+include_directories(PUBLIC gen_lib/)

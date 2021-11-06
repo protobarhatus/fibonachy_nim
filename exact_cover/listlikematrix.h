@@ -1,7 +1,7 @@
 #ifndef EXACT_COVER_LISTLIKEMATRIX_H
 #define EXACT_COVER_LISTLIKEMATRIX_H
-#include "../gen_lib/vector/vector.h"
-#include "../gen_lib/vector/algorithms.h"
+#include "vector/vector.h"
+#include "vector/algorithms.h"
 
 //ListLikeMatrix is sparse matrix that works on dancing links algorithm
 //it is created from regular VectorVectorInt, where nodes are exist only when it is one there

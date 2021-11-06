@@ -1,8 +1,8 @@
-#include "gen_lib/vector/vector.h"
+#include "vector/vector.h"
 #include "greeklatinsquare/greeklatinsquare.h"
-#include "gen_lib/user_interacts/user_interactions.h"
+#include "user_interacts/user_interactions.h"
 #include <stdio.h>
-#include "gen_lib/vector/algorithms.h"
+#include "vector/algorithms.h"
 
 //to use it, enter length of exact cover n and then n digits that resemble exact cover. n must be full square, its area of latin square
 //and digits are order numbers of lines (starting from 0) in exact cover that was generated exactly in format of translation greek

@@ -1,7 +1,7 @@
 #ifndef GREEKLATINGSQ_PERMUTATIONS_H
 #define GREEKLATINGSQ_PERMUTATIONS_H
 
-#include "../gen_lib/vector/Array2dInt.h"
+#include "vector/Array2dInt.h"
 #include "stdbool.h"
 
 //<"=" == forbidden>

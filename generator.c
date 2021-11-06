@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "greeklatinsquare/greeklatinsquare.h"
-#include "gen_lib/user_interacts/user_interactions.h"
+#include "user_interacts/user_interactions.h"
 
 int main(int argc, char * argv[])
 {

@@ -1,0 +1,25 @@
+exact_cover_solve:
+    input: amount of lines and columns of matrix, then matrix consists of 1 or 0's
+    output: n digits that represent n chosen lines of exact_cover, is digit is index of that line in source matrix if PRINT_SIZE is undefined;
+    n + 1 digits where first is n if PRINT_SIZE is defined
+greeklatinsquares:
+    input: length of latin square and correct latin square
+    output: orthogonal square
+square_to_exact_cover:
+    input: length n of lating square and correct latin square
+    output: amount of lines and columns in result matrix, matrix with size of n^3-n^2+n with 1 and 0's that is exact cover problem for
+    finding orthogonal square
+exact_cover_to_square
+    to use it, enter length of exact cover n and then n digits that resemble exact cover. n must be full square, its area of latin square
+    and digits are order numbers of lines (starting from 0) in exact cover that was generated exactly in format of translation greek
+    lating squares to exact cover, i.e. orig exact cover has n^(3/2) - n + n^(1/2) lines.
+    Input values must be sorted by increasing.
+    consistent execution of square_to_exact_cover and exact_cover_solve must give right form of exact_cover
+orthogonal_by_exact_cover:
+    like greeklatinsquares, but solving method is exact cover
+generator:
+    input: size of square and number k.
+    output: correct latin square with given size, each unique square correspond to different k
+sudoku:
+    input: 9x9 square with sudoku problem
+    output: solved sudoku

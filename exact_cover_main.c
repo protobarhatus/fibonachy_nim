@@ -1,11 +1,13 @@
 #include "exact_cover/exactcover.h"
-#include "gen_lib/vector/vector.h"
 #include <stdio.h>
-#include "gen_lib/user_interacts/user_interactions.h"
-#include "gen_lib/vector/algorithms.h"
+#include "user_interacts/user_interactions.h"
+#include "vector/algorithms.h"
 
+
+#define PRINT_SIZE
 int main()
 {
+    setbuf(stdout, 0);
     int n, m;
     n = getValue(stdin);
     m = getValue(stdin);
@@ -24,8 +26,9 @@ int main()
         printf("NO COVER\n");
     else
     {
+#ifdef PRINT_SIZE
         printf("%d ", res.getSize(&res));
-
+#endif
         printfVectorInt("", &res);
     }
 
